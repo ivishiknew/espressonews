@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espresso News Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111010;
+  --paper: #f4efe6;
+  --cream: #ece6d9;
+  --rule: #222;
+  --red: #c0251e;
+  --muted: #6b6458;
+  --border: #2a2a2a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  border-bottom: 4px double var(--border);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.masthead-inner {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.masthead-logo {
+  padding: 14px 32px 12px;
+  border-right: 1px solid var(--border);
+}
+
+.logo-word {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.logo-word em { font-style: normal; color: var(--red); }
+
+.logo-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.masthead-date {
+  flex: 1;
+  padding: 10px 24px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.date-main {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.date-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+.masthead-actions {
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 90px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 24px 20px;
+  position: sticky;
+  top: 90px;
+  height: calc(100vh - 90px);
+  overflow-y: auto;
+  background: var(--cream);
+}
+
+.sidebar-section { margin-bottom: 28px; }
+
+.sidebar-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* BUTTONS */
+.btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  width: auto;
+  justify-content: center;
+}
+
+.btn-primary:hover:not(:disabled) { background: #333; }
+.btn-primary:disabled { background: #999; cursor: not-allowed; }
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink);
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-outline:hover { background: var(--ink); color: var(--paper); }
+
+/* STATUS */
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--muted);
+  margin-bottom: 14px;
+  min-height: 18px;
+}
+
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #ccc;
+  flex-shrink: 0;
+}
+
+.dot.green { background: #27ae60; animation: pulse 1.5s infinite; }
+.dot.red { background: var(--red); }
+.dot.amber { background: #e67e22; animation: pulse 1s infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* FEED TOGGLES */
+.feed-list { display: flex; flex-direction: column; gap: 4px; }
+
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.12s;
+  user-select: none;
+}
+
+.feed-row:hover { border-color: #ccc; background: var(--paper); }
+.feed-row.on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.feed-row.on .feed-dot { background: #27ae60; }
+.feed-row.loading .feed-dot { background: #e67e22; animation: pulse 0.8s infinite; }
+.feed-row.err .feed-dot { background: var(--red); }
+
+.feed-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #ccc;
+  flex-shrink: 0;
+}
+
+.feed-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.66rem;
+  font-weight: 500;
+  flex: 1;
+}
+
+.feed-n {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  opacity: 0.6;
+}
+
+/* STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stat-box {
+  background: var(--paper);
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.stat-n {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: 1px;
+}
+
+/* ── MAIN CONTENT ── */
+.content {
+  padding: 32px 36px;
+  overflow-y: auto;
+}
+
+/* SECTION HEADS */
+.sh {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.sh-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sh-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 2px;
+}
+
+.sh-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ── TOP STORIES ── */
+.stories-section { margin-bottom: 44px; }
+
+.story-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--border);
+}
+
+.story-card {
+  padding: 20px 22px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+
+.story-card:hover { background: var(--cream); }
+.story-card.lead { grid-column: 1 / -1; border-right: none; }
+.story-card:nth-child(even):not(.lead) { border-right: none; }
+
+.story-rank {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  color: var(--red);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.story-hed {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.lead .story-hed { font-size: 1.6rem; }
+
+.story-outlets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.outlet-chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 2px 7px;
+}
+
+.coverage-bar-wrap {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coverage-bar {
+  flex: 1;
+  height: 3px;
+  background: #ddd;
+}
+
+.coverage-fill {
+  height: 100%;
+  background: var(--red);
+  transition: width 0.6s ease;
+}
+
+.coverage-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.story-links {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.story-link {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.story-link:hover { color: var(--red); border-bottom-color: var(--red); }
+.story-link::before { content: '↗ '; }
+
+/* EMPTY */
+.empty {
+  padding: 56px 20px;
+  text-align: center;
+  border: 1px dashed #ccc;
+}
+
+.empty-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.empty-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: #bbb;
+}
+
+/* ── RAW FEED ── */
+.raw-table {
+  border: 1px solid var(--border);
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.raw-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 90px;
+  gap: 14px;
+  padding: 9px 14px;
+  border-bottom: 1px solid #e5dfd3;
+  align-items: start;
+  transition: background 0.1s;
+}
+
+.raw-row:hover { background: var(--cream); }
+.raw-row:last-child { border-bottom: none; }
+
+.raw-src {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  padding-top: 1px;
+}
+
+.raw-hed { font-size: 0.78rem; line-height: 1.4; }
+.raw-hed a { color: var(--ink); text-decoration: none; }
+.raw-hed a:hover { color: var(--red); }
+
+.raw-time {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  text-align: right;
+  padding-top: 1px;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: #bbb; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-logo">
+      <div class="logo-word">ESPRESSO<em> NEWS</em></div>
+      <div class="logo-sub">News Tracker</div>
+    </div>
+    <div class="masthead-date">
+      <div class="date-main" id="hdr-date"></div>
+      <div class="date-sub" id="hdr-time"></div>
+    </div>
+    <div class="masthead-actions">
+      <button class="btn btn-primary" id="btn-fetch" onclick="fetchAllFeeds()">
+        <span id="fetch-icon">▶</span> Fetch Feeds
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Status</div>
+      <div class="status-pill">
+        <div class="dot" id="status-dot"></div>
+        <span id="status-text">Ready</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Stats</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-n" id="stat-items">0</div><div class="stat-label">Headlines</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-feeds">0</div><div class="stat-label">Feeds</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-clusters">—</div><div class="stat-label">Clusters</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-top">—</div><div class="stat-label">Top Stories</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Feeds</div>
+      <div class="feed-list" id="feed-list"></div>
+      <button class="btn btn-outline" onclick="toggleAll()" style="margin-top:10px;font-size:0.6rem;padding:6px 10px;">Toggle All</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <section class="stories-section">
+      <div class="sh">
+        <div class="sh-title">Top Stories</div>
+        <div class="sh-rule"></div>
+        <div class="sh-meta" id="stories-meta">Awaiting data</div>
+      </div>
+      <div id="story-grid-wrap">
+        <div class="empty">
+          <div class="empty-title">No stories yet</div>
+          <div class="empty-sub">Fetch feeds to identify today's top stories</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sh">
+        <div class="sh-title">Raw Feed</div>
+        <div class="sh-rule"></div>
+        <div class="sh-meta" id="raw-meta">0 items</div>
+      </div>
+      <div id="raw-wrap">
+        <div class="empty">
+          <div class="empty-title">No feed data</div>
+          <div class="empty-sub">Incoming headlines will appear here</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+// ─────────────────────────────────────
+//  FEEDS
+// ─────────────────────────────────────
+const FEEDS = [
+  { id:'bbc',      name:'BBC World',    url:'https://feeds.bbci.co.uk/news/world/rss.xml' },
+  { id:'guardian', name:'Guardian',     url:'https://www.theguardian.com/world/rss' },
+  { id:'alj',      name:'Al Jazeera',  url:'https://www.aljazeera.com/xml/rss/all.xml' },
+  { id:'france24', name:'France 24',   url:'https://www.france24.com/en/rss' },
+  { id:'dw',       name:'DW',           url:'https://rss.dw.com/rdf/rss-en-all' },
+  { id:'abc',      name:'ABC News',     url:'https://abcnews.go.com/abcnews/internationalheadlines' },
+  { id:'npr',      name:'NPR World',    url:'https://feeds.npr.org/1004/rss.xml' },
+  { id:'rfi',      name:'RFI English',  url:'https://en.rfi.fr/general.rss' },
+  { id:'reuters_g',name:'Reuters (G)',  url:'https://news.google.com/rss/search?q=reuters+world+news&ceid=US:en&hl=en-US&gl=US' },
+  { id:'ap_g',     name:'AP (G)',        url:'https://news.google.com/rss/search?q=associated+press+world&ceid=US:en&hl=en-US&gl=US' },
+  { id:'afp_g',    name:'AFP (G)',       url:'https://news.google.com/rss/search?q=agence+france+presse+world&ceid=US:en&hl=en-US&gl=US' },
+  { id:'gnews',    name:'Google Top',   url:'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnVHZ0pWVXlnQVAB' },
+];
+
+const PROXY = 'https://api.allorigins.win/get?url=';
+
+const STOPWORDS = new Set([
+  'the','a','an','and','or','but','in','on','at','to','for','of','with','by',
+  'from','as','is','was','are','were','be','been','have','has','had','will',
+  'would','could','should','that','this','these','those','it','its','he',
+  'she','they','we','you','who','what','where','when','why','how','after',
+  'before','over','under','into','out','up','down','no','so','if','than',
+  'then','about','also','just','new','says','say','said','amid','despite',
+  'reports','according','two','three','four','five','six','one','more',
+  'while','during','following','within','not','amid','their','his','her',
+]);
+
+let enabledFeeds = new Set(FEEDS.map(f => f.id));
+let allItems = [];
+let feedCounts = {};
+
+// ─────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderFeedList();
+  tick();
+  setInterval(tick, 1000);
+});
+
+function tick() {
+  const now = new Date();
+  document.getElementById('hdr-date').textContent =
+    now.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('hdr-time').textContent = 'UTC ' + now.toUTCString().slice(17,25);
+}
+
+// ─────────────────────────────────────
+//  FEED LIST
+// ─────────────────────────────────────
+function renderFeedList() {
+  document.getElementById('feed-list').innerHTML = FEEDS.map(f => `
+    <div class="feed-row ${enabledFeeds.has(f.id) ? 'on' : ''}" id="fr-${f.id}" onclick="toggleFeed('${f.id}')">
+      <div class="feed-dot" id="fd-${f.id}"></div>
+      <div class="feed-name">${f.name}</div>
+      <div class="feed-n" id="fn-${f.id}">${feedCounts[f.id] ?? '—'}</div>
+    </div>
+  `).join('');
+}
+
+function toggleFeed(id) {
+  enabledFeeds.has(id) ? enabledFeeds.delete(id) : enabledFeeds.add(id);
+  renderFeedList();
+  restoreCounts();
+}
+
+function toggleAll() {
+  enabledFeeds = enabledFeeds.size === FEEDS.length
+    ? new Set()
+    : new Set(FEEDS.map(f => f.id));
+  renderFeedList();
+  restoreCounts();
+}
+
+function restoreCounts() {
+  Object.entries(feedCounts).forEach(([id, n]) => {
+    const el = document.getElementById(`fn-${id}`);
+    if (el) el.textContent = n;
+  });
+}
+
+// ─────────────────────────────────────
+//  FETCH
+// ─────────────────────────────────────
+async function fetchAllFeeds() {
+  const btn = document.getElementById('btn-fetch');
+  btn.disabled = true;
+  document.getElementById('fetch-icon').textContent = '⟳';
+
+  allItems = [];
+  feedCounts = {};
+
+  const active = FEEDS.filter(f => enabledFeeds.has(f.id));
+  document.getElementById('stat-feeds').textContent = active.length;
+  setStatus('amber', `Fetching ${active.length} feeds…`);
+
+  // Mark all as loading
+  active.forEach(f => setFeedState(f.id, 'loading'));
+
+  let done = 0;
+  await Promise.all(active.map(async feed => {
+    try {
+      const items = await fetchFeed(feed);
+      feedCounts[feed.id] = items.length;
+      allItems.push(...items);
+      setFeedState(feed.id, 'on', items.length);
+      done++;
+      document.getElementById('stat-items').textContent = allItems.length;
+      setStatus('amber', `Loaded ${done}/${active.length} — ${allItems.length} items`);
+      renderRaw();
+    } catch(e) {
+      setFeedState(feed.id, 'err', 'ERR');
+      console.warn(feed.name, e.message);
+    }
+  }));
+
+  btn.disabled = false;
+  document.getElementById('fetch-icon').textContent = '▶';
+
+  if (allItems.length > 0) {
+    setStatus('green', `✓ ${allItems.length} headlines from ${done} feeds — clustering…`);
+    clusterAndRender();
+  } else {
+    setStatus('red', 'No items loaded — try refreshing or check your connection');
+  }
+}
+
+async function fetchFeed(feed) {
+  const r = await fetch(`${PROXY}${encodeURIComponent(feed.url)}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const { contents } = await r.json();
+  return parseFeed(contents, feed);
+}
+
+function parseFeed(xml, feed) {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const out = [];
+
+  const push = (title, link, date) => {
+    if (!title || title.length < 6) return;
+    out.push({
+      title: clean(title),
+      link: link || '',
+      date: date ? new Date(date) : new Date(),
+      source: feed.name,
+      sourceId: feed.id,
+    });
+  };
+
+  doc.querySelectorAll('item').forEach(el =>
+    push(
+      el.querySelector('title')?.textContent,
+      el.querySelector('link')?.textContent?.trim() || el.querySelector('link')?.getAttribute('href'),
+      el.querySelector('pubDate')?.textContent
+    )
+  );
+
+  if (!out.length) {
+    doc.querySelectorAll('entry').forEach(el =>
+      push(
+        el.querySelector('title')?.textContent,
+        el.querySelector('link')?.getAttribute('href'),
+        el.querySelector('updated')?.textContent
+      )
+    );
+  }
+
+  return out.slice(0, 50);
+}
+
+function clean(t) {
+  return t.replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')
+    .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+
+// ─────────────────────────────────────
+//  KEYWORD SIMILARITY
+// ─────────────────────────────────────
+function getKeywords(title) {
+  const words = title.toLowerCase().replace(/[^a-z0-9'\-]/g, ' ').split(/\s+/);
+  const kw = new Set();
+  words.forEach((w, i) => {
+    if (w.length >= 3 && !STOPWORDS.has(w)) kw.add(w);
+    // also add bigrams for names/places (first 8 words)
+    if (i < 8 && words[i+1] && words[i+1].length >= 3 && !STOPWORDS.has(words[i+1])) {
+      kw.add(`${w}_${words[i+1]}`);
+    }
+  });
+  return kw;
+}
+
+function similarity(titleA, titleB) {
+  const a = getKeywords(titleA);
+  const b = getKeywords(titleB);
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  a.forEach(w => { if (b.has(w)) inter++; });
+  return inter / Math.sqrt(a.size * b.size);
+}
+
+// ─────────────────────────────────────
+//  GREEDY CLUSTERING
+// ─────────────────────────────────────
+const SIM_THRESHOLD = 0.20;
+
+function cluster(items) {
+  // Sort newest first so cluster representative = freshest
+  const sorted = [...items].sort((a, b) => b.date - a.date);
+  const used = new Uint8Array(sorted.length);
+  const clusters = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (used[i]) continue;
+    const group = [sorted[i]];
+    used[i] = 1;
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (used[j]) continue;
+      if (similarity(sorted[i].title, sorted[j].title) >= SIM_THRESHOLD) {
+        group.push(sorted[j]);
+        used[j] = 1;
+      }
+    }
+    clusters.push(group);
+  }
+  return clusters;
+}
+
+function score(group) {
+  const outlets = new Set(group.map(i => i.source));
+  const latestMs = Math.max(...group.map(i => i.date.getTime()));
+  // Weighted: outlet diversity matters most, raw count second, recency a small boost
+  return outlets.size * 4 + group.length + (latestMs / 1e12);
+}
+
+// ─────────────────────────────────────
+//  CLUSTER → RENDER
+// ─────────────────────────────────────
+function clusterAndRender() {
+  setTimeout(() => {
+    const clusters = cluster(allItems);
+    clusters.sort((a, b) => score(b) - score(a));
+
+    // Prefer multi-outlet stories; always show at least 7
+    const top = clusters
+      .filter(g => new Set(g.map(i => i.source)).size >= 2 || clusters.indexOf(g) < 7)
+      .slice(0, 7);
+
+    document.getElementById('stat-clusters').textContent = clusters.length;
+    document.getElementById('stat-top').textContent = top.length;
+
+    renderStories(top);
+    setStatus('green', `✓ ${clusters.length} clusters · top ${top.length} stories identified`);
+  }, 60);
+}
+
+function renderStories(top) {
+  document.getElementById('stories-meta').textContent =
+    `${top.length} stories · ${allItems.length} headlines analysed`;
+
+  if (!top.length) {
+    document.getElementById('story-grid-wrap').innerHTML =
+      '<div class="empty"><div class="empty-title">No clusters found</div><div class="empty-sub">Try enabling more feeds</div></div>';
+    return;
+  }
+
+  const maxScore = score(top[0]);
+
+  const cards = top.map((group, idx) => {
+    const outlets = [...new Set(group.map(i => i.source))];
+    const rep = group[0];
+    const pct = Math.round((score(group) / maxScore) * 100);
+
+    const links = [...new Map(group.filter(i => i.link).map(i => [i.source, i])).values()]
+      .slice(0, 5)
+      .map(i => `<a class="story-link" href="${i.link}" target="_blank" rel="noopener">${i.source}</a>`)
+      .join('');
+
+    const chips = outlets.map(o => `<span class="outlet-chip">${o}</span>`).join('');
+
+    return `
+      <div class="story-card ${idx === 0 ? 'lead' : ''}">
+        <div class="story-rank">
+          Story ${idx + 1} of ${top.length}
+          &nbsp;·&nbsp; ${outlets.length} outlet${outlets.length !== 1 ? 's' : ''}
+          &nbsp;·&nbsp; ${group.length} headline${group.length !== 1 ? 's' : ''}
+        </div>
+        <div class="story-hed">${rep.title}</div>
+        <div class="story-outlets">${chips}</div>
+        <div class="coverage-bar-wrap">
+          <div class="coverage-bar"><div class="coverage-fill" style="width:${pct}%"></div></div>
+          <div class="coverage-label">Coverage ${pct}%</div>
+        </div>
+        ${links ? `<div class="story-links">${links}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('story-grid-wrap').innerHTML = `<div class="story-grid">${cards}</div>`;
+}
+
+// ─────────────────────────────────────
+//  RAW FEED
+// ─────────────────────────────────────
+function renderRaw() {
+  const sorted = [...allItems].sort((a, b) => b.date - a.date);
+  document.getElementById('raw-meta').textContent = `${sorted.length} items`;
+  document.getElementById('raw-wrap').innerHTML = `
+    <div class="raw-table">
+      ${sorted.map(i => `
+        <div class="raw-row">
+          <div class="raw-src">${i.source}</div>
+          <div class="raw-hed"><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></div>
+          <div class="raw-time">${ago(i.date)}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function ago(d) {
+  const m = (Date.now() - d) / 60000;
+  if (m < 60) return `${Math.round(m)}m ago`;
+  if (m < 1440) return `${Math.round(m / 60)}h ago`;
+  return d.toLocaleDateString();
+}
+
+// ─────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────
+function setStatus(type, msg) {
+  document.getElementById('status-dot').className = `dot ${type}`;
+  document.getElementById('status-text').textContent = msg;
+}
+
+function setFeedState(id, state, count) {
+  const row = document.getElementById(`fr-${id}`);
+  const n   = document.getElementById(`fn-${id}`);
+  if (row) row.className = `feed-row ${state}`;
+  if (n && count !== undefined) n.textContent = count;
+}
+</script>
+</body>
+</html>
