@@ -587,12 +587,11 @@ body {
 const FEEDS = [
   { id:'bbc',      name:'BBC World',    url:'https://feeds.bbci.co.uk/news/world/rss.xml' },
   { id:'guardian', name:'Guardian',     url:'https://www.theguardian.com/world/rss' },
-  { id:'alj',      name:'Al Jazeera',  url:'https://www.aljazeera.com/xml/rss/all.xml' },
+  { id:'alj',      name:'Al Jazeera',  url:'https://news.google.com/rss/search?q=aljazeera+world+news&ceid=US:en&hl=en-US&gl=US' },
   { id:'france24', name:'France 24',   url:'https://www.france24.com/en/rss' },
   { id:'dw',       name:'DW',           url:'https://rss.dw.com/rdf/rss-en-all' },
   { id:'abc',      name:'ABC News',     url:'https://abcnews.go.com/abcnews/internationalheadlines' },
   { id:'npr',      name:'NPR World',    url:'https://feeds.npr.org/1004/rss.xml' },
-  { id:'rfi',      name:'RFI English',  url:'https://en.rfi.fr/general.rss' },
   { id:'reuters_g',name:'Reuters (G)',  url:'https://news.google.com/rss/search?q=reuters+world+news&ceid=US:en&hl=en-US&gl=US' },
   { id:'ap_g',     name:'AP (G)',        url:'https://news.google.com/rss/search?q=associated+press+world&ceid=US:en&hl=en-US&gl=US' },
   { id:'afp_g',    name:'AFP (G)',       url:'https://news.google.com/rss/search?q=agence+france+presse+world&ceid=US:en&hl=en-US&gl=US' },
@@ -839,8 +838,8 @@ function clusterAndRender() {
 
     // Prefer multi-outlet stories; always show at least 7
     const top = clusters
-      .filter(g => new Set(g.map(i => i.source)).size >= 2 || clusters.indexOf(g) < 7)
-      .slice(0, 7);
+      .filter(g => new Set(g.map(i => i.source)).size >= 2 || clusters.indexOf(g) < 10)
+      .slice(0, 10);
 
     document.getElementById('stat-clusters').textContent = clusters.length;
     document.getElementById('stat-top').textContent = top.length;
