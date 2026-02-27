@@ -598,7 +598,12 @@ const FEEDS = [
   { id:'gnews',    name:'Google Top',   url:'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnVHZ0pWVXlnQVAB' },
 ];
 
-const PROXY = 'https://api.allorigins.win/get?url=';
+// Multiple proxies tried in order until one works
+const PROXIES = [
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+];
 
 const STOPWORDS = new Set([
   'the','a','an','and','or','but','in','on','at','to','for','of','with','by',
@@ -720,10 +725,29 @@ async function fetchAllFeeds() {
 }
 
 async function fetchFeed(feed) {
-  const r = await fetch(`${PROXY}${encodeURIComponent(feed.url)}`);
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const { contents } = await r.json();
-  return parseFeed(contents, feed);
+  let lastError;
+  for (const proxyFn of PROXIES) {
+    try {
+      const r = await fetch(proxyFn(feed.url), { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const text = await r.text();
+      // allorigins wraps in JSON; others return raw XML
+      let xml;
+      try {
+        const json = JSON.parse(text);
+        xml = json.contents ?? json;
+      } catch {
+        xml = text;
+      }
+      if (!xml || xml.length < 50) throw new Error('Empty response');
+      const items = parseFeed(xml, feed);
+      if (items.length === 0) throw new Error('No items parsed');
+      return items;
+    } catch(e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
 }
 
 function parseFeed(xml, feed) {
