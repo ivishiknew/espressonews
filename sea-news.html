@@ -691,38 +691,38 @@ body {
 // ─────────────────────────────────────
 const FEEDS = [
   // ── SINGAPORE ──
-  { id:'cna',       name:'Channel NewsAsia', country:'Singapore',   url:'https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=10416' },
-  { id:'straitstm', name:'Straits Times',    country:'Singapore',   url:'https://www.straitstimes.com/news/singapore/rss.xml' },
+  { id:'cna',       name:'Channel NewsAsia', country:'Singapore',   url:'https://news.google.com/rss/search?q=channel+newsasia+singapore+news&ceid=SG:en&hl=en-SG&gl=SG' },
+  { id:'straitstm', name:'Straits Times',    country:'Singapore',   url:'https://news.google.com/rss/search?q=straits+times+singapore+news&ceid=SG:en&hl=en-SG&gl=SG' },
   { id:'todaysg',   name:'Today Online',     country:'Singapore',   url:'https://news.google.com/rss/search?q=todayonline+singapore+news&ceid=SG:en&hl=en-SG&gl=SG' },
 
   // ── MALAYSIA ──
   { id:'thestar',   name:'The Star',         country:'Malaysia',    url:'https://news.google.com/rss/search?q=the+star+malaysia+news&ceid=MY:en&hl=en-MY&gl=MY' },
   { id:'malaymail', name:'Malay Mail',        country:'Malaysia',    url:'https://news.google.com/rss/search?q=malay+mail+malaysia+news&ceid=MY:en&hl=en-MY&gl=MY' },
-  { id:'fmt',       name:'Free Malaysia Today', country:'Malaysia', url:'https://www.freemalaysiatoday.com/feed/' },
+  { id:'fmt',       name:'Free Malaysia Today', country:'Malaysia', url:'https://news.google.com/rss/search?q=free+malaysia+today+news&ceid=MY:en&hl=en-MY&gl=MY' },
 
   // ── INDONESIA ──
   { id:'jakpost',   name:'Jakarta Post',     country:'Indonesia',   url:'https://news.google.com/rss/search?q=jakarta+post+indonesia+news&ceid=ID:en&hl=en-ID&gl=ID' },
-  { id:'antara',    name:'Antara News',      country:'Indonesia',   url:'https://en.antaranews.com/rss/news' },
+  { id:'antara',    name:'Antara News',      country:'Indonesia',   url:'https://news.google.com/rss/search?q=antara+news+indonesia&ceid=ID:en&hl=en-ID&gl=ID' },
   { id:'tempoid',   name:'Tempo',            country:'Indonesia',   url:'https://news.google.com/rss/search?q=tempo+english+indonesia+news&ceid=ID:en&hl=en-ID&gl=ID' },
 
   // ── PHILIPPINES ──
-  { id:'rappler',   name:'Rappler',          country:'Philippines', url:'https://www.rappler.com/feed/' },
-  { id:'inquirer',  name:'Inquirer',         country:'Philippines', url:'https://newsinfo.inquirer.net/feed/' },
+  { id:'rappler',   name:'Rappler',          country:'Philippines', url:'https://news.google.com/rss/search?q=rappler+philippines+news&ceid=PH:en&hl=en-PH&gl=PH' },
+  { id:'inquirer',  name:'Inquirer',         country:'Philippines', url:'https://news.google.com/rss/search?q=philippine+daily+inquirer+news&ceid=PH:en&hl=en-PH&gl=PH' },
   { id:'manilabul', name:'Manila Bulletin',  country:'Philippines', url:'https://news.google.com/rss/search?q=manila+bulletin+philippines+news&ceid=PH:en&hl=en-PH&gl=PH' },
 
   // ── THAILAND ──
-  { id:'bkpost',    name:'Bangkok Post',     country:'Thailand',    url:'https://www.bangkokpost.com/rss/data/most-recent.xml' },
-  { id:'thaipbs',   name:'Thai PBS World',   country:'Thailand',    url:'https://news.thaipbs.or.th/rss/world.xml' },
+  { id:'bkpost',    name:'Bangkok Post',     country:'Thailand',    url:'https://news.google.com/rss/search?q=bangkok+post+thailand+news&ceid=TH:en&hl=en-TH&gl=TH' },
+  { id:'thaipbs',   name:'Thai PBS World',   country:'Thailand',    url:'https://news.google.com/rss/search?q=thai+pbs+world+news&ceid=TH:en&hl=en-TH&gl=TH' },
   { id:'nationth',  name:'The Nation TH',   country:'Thailand',    url:'https://news.google.com/rss/search?q=nation+thailand+news&ceid=TH:en&hl=en-TH&gl=TH' },
 
   // ── VIETNAM ──
-  { id:'vnexpress', name:'VnExpress Intl',  country:'Vietnam',     url:'https://e.vnexpress.net/rss/news.rss' },
-  { id:'vietnamnws',name:'Vietnam News',    country:'Vietnam',     url:'https://vietnamnews.vn/rss' },
-  { id:'tuoitre',   name:'Tuoi Tre News',   country:'Vietnam',     url:'https://tuoitrenews.vn/rss' },
+  { id:'vnexpress', name:'VnExpress Intl',  country:'Vietnam',     url:'https://news.google.com/rss/search?q=vnexpress+vietnam+news&ceid=VN:en&hl=en-VN&gl=VN' },
+  { id:'vietnamnws',name:'Vietnam News',    country:'Vietnam',     url:'https://news.google.com/rss/search?q=vietnam+news+today+english&ceid=VN:en&hl=en-VN&gl=VN' },
+  { id:'tuoitre',   name:'Tuoi Tre News',   country:'Vietnam',     url:'https://news.google.com/rss/search?q=tuoi+tre+news+vietnam&ceid=VN:en&hl=en-VN&gl=VN' },
 
   // ── MYANMAR ──
   { id:'irrawaddy', name:'The Irrawaddy',   country:'Myanmar',     url:'https://news.google.com/rss/search?q=irrawaddy+myanmar+news&ceid=US:en&hl=en-US&gl=US' },
-  { id:'mmnow',     name:'Myanmar Now',     country:'Myanmar',     url:'https://myanmar-now.org/en/feed' },
+  { id:'mmnow',     name:'Myanmar Now',     country:'Myanmar',     url:'https://news.google.com/rss/search?q=myanmar+now+news&ceid=US:en&hl=en-US&gl=US' },
   { id:'mizzima',   name:'Mizzima',         country:'Myanmar',     url:'https://news.google.com/rss/search?q=mizzima+myanmar+news&ceid=US:en&hl=en-US&gl=US' },
 
   // ── CAMBODIA ──
