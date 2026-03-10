@@ -230,6 +230,7 @@ body {
   <div class="masthead-inner">
     <div class="masthead-logo">
       <div class="logo-word"><em>GLOBAL</em> NEWS TRACKER</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.5rem;color:var(--muted);letter-spacing:1px;margin-top:4px;">Compiled using RSS feeds from selected publications</div>
     </div>
     <div style="padding:12px 24px;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
       <button class="btn btn-primary" id="btn-fetch" onclick="fetchAllFeeds()">
@@ -302,6 +303,13 @@ body {
         <div class="sh-rule"></div>
         <select id="raw-filter" class="raw-filter-select" onchange="renderRaw()">
           <option value="all">All feeds</option>
+        </select>
+        <select id="raw-cat-filter" class="raw-filter-select" onchange="renderRaw()" style="margin-left:4px;">
+          <option value="all">All categories</option>
+          <option value="Geopolitics">Geopolitics</option>
+          <option value="Economics">Economics</option>
+          <option value="Local Politics">Local Politics</option>
+          <option value="General">General</option>
         </select>
         <div class="sh-meta" id="raw-meta">0 items</div>
       </div>
@@ -419,6 +427,8 @@ async function fetchAllFeeds() {
 
   allItems = [];
   feedCounts = {};
+  const catSel = document.getElementById('raw-cat-filter');
+  if (catSel) catSel.value = 'all';
 
   const active = FEEDS.filter(f => enabledFeeds.has(f.id));
   document.getElementById('stat-feeds').textContent = active.length;
@@ -696,6 +706,7 @@ function renderStories(top) {
 function renderRaw() {
   const select = document.getElementById('raw-filter');
   const chosen = select ? select.value : 'all';
+  const catFilt = document.getElementById('raw-cat-filter')?.value ?? 'all';
 
   // Rebuild dropdown options from current sources
   const sources = ['all', ...new Set(allItems.map(i => i.source))].sort((a,b) => a === 'all' ? -1 : a.localeCompare(b));
@@ -705,9 +716,8 @@ function renderRaw() {
     ).join('');
   }
 
-  const filtered = chosen === 'all'
-    ? allItems
-    : allItems.filter(i => i.source === chosen);
+  let filtered = chosen === 'all' ? allItems : allItems.filter(i => i.source === chosen);
+  if (catFilt !== 'all') filtered = filtered.filter(i => classifyStory([i]) === catFilt);
 
   const sorted = [...filtered].sort((a, b) => b.date - a.date);
   document.getElementById('raw-meta').textContent = `${sorted.length} item${sorted.length !== 1 ? 's' : ''}`;
