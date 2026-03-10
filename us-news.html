@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US News Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #E3120B;
+  --ink: #121212;
+  --paper: #FFFFFF;
+  --cream: #F7F7F7;
+  --muted: #777777;
+  --border: #CCCCCC;
+  --border-dark: #333333;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { background: var(--paper); color: var(--ink); font-family: 'Lato', Arial, sans-serif; font-size: 14px; min-height: 100vh; }
+
+/* ── MASTHEAD ── */
+.masthead { border-top: 5px solid var(--red); border-bottom: 1px solid var(--border-dark); background: var(--paper); position: sticky; top: 0; z-index: 200; }
+.masthead-inner { display: flex; align-items: stretch; justify-content: space-between; }
+.masthead-logo { padding: 12px 28px 10px; border-right: 1px solid var(--border); }
+.logo-word { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.5rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; color: var(--ink); }
+.logo-word em { font-style: normal; color: var(--red); }
+.masthead-date { flex: 1; padding: 10px 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.date-main { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--ink); font-weight: 500; }
+.clocks { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+.clock-item { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); }
+.clock-city { text-transform: uppercase; letter-spacing: 1px; font-size: 0.52rem; color: var(--muted); margin-right: 3px; }
+.clock-time { color: var(--ink); font-weight: 500; }
+.clock-sep { color: #ccc; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; }
+.masthead-actions { padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 90px); }
+
+/* ── SIDEBAR ── */
+.sidebar { border-right: 1px solid var(--border); padding: 20px 16px; position: sticky; top: 90px; height: calc(100vh - 90px); overflow-y: auto; background: var(--cream); }
+.sidebar-section { margin-bottom: 24px; }
+.sidebar-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--red); }
+
+/* BUTTONS */
+.btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; padding: 8px 16px; border: none; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.btn-primary { background: var(--red); color: #fff; width: auto; justify-content: center; }
+.btn-primary:hover:not(:disabled) { background: #c00f08; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+.btn-outline { background: transparent; border: 1px solid var(--border-dark); color: var(--ink); width: 100%; justify-content: center; }
+.btn-outline:hover { background: var(--ink); color: var(--paper); }
+
+/* STATUS */
+.status-pill { display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); margin-bottom: 12px; min-height: 18px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+.dot.green { background: #27ae60; animation: pulse 1.5s infinite; }
+.dot.red { background: var(--red); }
+.dot.amber { background: #e67e22; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* FEED TOGGLES */
+.feed-list { display: flex; flex-direction: column; gap: 1px; }
+.feed-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; cursor: pointer; border-left: 2px solid transparent; transition: all 0.12s; user-select: none; }
+.feed-row:hover { border-left-color: var(--border); background: var(--paper); }
+.feed-row.on { border-left-color: var(--red); background: var(--paper); color: var(--ink); }
+.feed-row.on .feed-dot { background: var(--red); }
+.feed-row.loading .feed-dot { background: #e67e22; animation: pulse 0.8s infinite; }
+.feed-row.err .feed-dot { background: #aaa; }
+.feed-dot { width: 5px; height: 5px; border-radius: 50%; background: #ddd; flex-shrink: 0; }
+.feed-name { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; flex: 1; color: var(--ink); }
+.feed-n { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; color: var(--muted); }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.stat-box { background: var(--paper); border: 1px solid var(--border); border-top: 2px solid var(--red); padding: 8px; text-align: center; }
+.stat-n { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.4rem; font-weight: 700; line-height: 1; color: var(--ink); }
+.stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.52rem; color: var(--muted); margin-top: 3px; letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── MAIN CONTENT ── */
+.content { padding: 28px 36px; overflow-y: auto; }
+
+/* SECTION HEADS */
+.sh { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; padding-top: 10px; border-top: 3px solid var(--red); flex-wrap: wrap; }
+.sh-title { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1rem; font-weight: 700; white-space: nowrap; color: var(--ink); }
+.sh-rule { flex: 1; height: 1px; background: var(--border); margin-bottom: 2px; min-width: 20px; }
+.sh-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--muted); font-style: italic; }
+
+/* ── TOP STORIES ── */
+.stories-section { margin-bottom: 28px; }
+.story-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-top: none; }
+.story-card { padding: 14px 16px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: background 0.12s; }
+.story-card:hover { background: var(--cream); }
+.story-card:nth-child(even) { border-right: none; }
+.story-card:nth-last-child(1):nth-child(odd) { border-right: none; }
+.story-rank { font-family: 'IBM Plex Mono', monospace; font-size: 0.52rem; letter-spacing: 1.5px; color: var(--red); margin-bottom: 4px; text-transform: uppercase; }
+.story-hed { font-family: 'Libre Baskerville', Georgia, serif; font-size: 0.9rem; font-weight: 700; line-height: 1.35; margin-bottom: 7px; color: var(--ink); }
+.story-outlets { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.outlet-chip { font-family: 'IBM Plex Mono', monospace; font-size: 0.5rem; background: var(--ink); color: #fff; padding: 1px 5px; }
+.story-links { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; }
+.story-link { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; }
+.story-link:hover { color: var(--red); border-bottom-color: var(--red); }
+.story-link::before { content: '↗ '; }
+
+/* EMPTY */
+.empty { padding: 48px 20px; text-align: center; border: 1px dashed var(--border); }
+.empty-title { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.2rem; color: var(--muted); margin-bottom: 8px; }
+.empty-sub { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: #bbb; }
+
+.raw-filter-select { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; background: var(--cream); border: 1px solid var(--border); color: var(--ink); padding: 3px 8px; cursor: pointer; outline: none; }
+.raw-filter-select:focus { border-color: var(--red); }
+.raw-table { border: 1px solid var(--border); border-top: none; }
+.raw-row { display: grid; grid-template-columns: 100px 1fr 90px; gap: 12px; padding: 8px 14px; border-bottom: 1px solid #eee; align-items: start; transition: background 0.1s; }
+.raw-row:hover { background: var(--cream); }
+.raw-row:last-child { border-bottom: none; }
+.raw-src { font-family: 'IBM Plex Mono', monospace; font-size: 0.56rem; color: var(--muted); padding-top: 1px; }
+.raw-hed { font-size: 0.78rem; line-height: 1.4; }
+.raw-hed a { color: var(--ink); text-decoration: none; }
+.raw-hed a:hover { color: var(--red); }
+.raw-time { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; color: var(--muted); text-align: right; padding-top: 1px; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #f0f0f0; }
+::-webkit-scrollbar-thumb { background: var(--red); }
+
+/* ── NEWS MAP ── */
+#map-wrap { position: relative; }
+
+.map-container {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  padding: 20px;
+  overflow: visible;
+}
+
+.us-map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.state-path {
+  fill: #e8e8e8;
+  stroke: var(--paper);
+  stroke-width: 1.5;
+  cursor: default;
+  transition: fill 0.2s;
+}
+
+.state-path.has-news {
+  fill: #b8d4e8;
+  cursor: pointer;
+}
+
+.state-path.has-news:hover {
+  fill: #7aaec8;
+}
+
+.state-path.has-national {
+  fill: #c8d4a8;
+  cursor: pointer;
+}
+
+.state-path.has-national:hover {
+  fill: #a8c478;
+}
+
+.state-path.active {
+  fill: var(--red) !important;
+}
+
+.map-tooltip {
+  display: none;
+  position: fixed;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 10px 14px;
+  max-width: 300px;
+  z-index: 999;
+  pointer-events: none;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+}
+
+.map-tooltip.show { display: block; }
+
+.tooltip-state {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  color: #7aaec8;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.tooltip-hed {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 5px;
+}
+
+.tooltip-src {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  color: #aaa;
+}
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+}
+
+.legend-swatch {
+  width: 14px; height: 14px;
+  display: inline-block;
+  border: 1px solid #aaa;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.state-panel {
+  margin-top: 20px;
+  display: none;
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  background: var(--cream);
+}
+
+.state-panel.show { display: block; }
+
+.state-panel-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.state-story-row {
+  padding: 8px 0;
+  border-bottom: 1px solid #e5dfd3;
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
+  gap: 12px;
+  align-items: start;
+}
+
+.state-story-row:last-child { border-bottom: none; }
+.state-panel-name { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--red); color: var(--ink); }
+.tooltip-hed { font-family: 'Libre Baskerville', Georgia, serif; font-size: 0.82rem; font-weight: 700; line-height: 1.3; margin-bottom: 5px; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-logo">
+      <div class="logo-word"><em>US</em> NEWS TRACKER</div>
+    </div>
+    <div style="padding:12px 24px;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+      <button class="btn btn-primary" id="btn-fetch" onclick="fetchAllFeeds()">
+        <span id="fetch-icon">↺</span> Refresh Feeds
+      </button>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:0.5px;text-align:center;">Click to see latest news stories</div>
+      <div id="last-refreshed" style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:#bbb;letter-spacing:0.5px;">Never refreshed</div>
+    </div>
+    <div class="masthead-date">
+      <div class="date-main" id="hdr-date"></div>
+      <div class="clocks">
+        <span class="clock-item"><span class="clock-city">London</span> <span class="clock-time" id="clock-lon"></span></span>
+        <span class="clock-sep">·</span>
+        <span class="clock-item"><span class="clock-city">New York</span> <span class="clock-time" id="clock-nyc"></span></span>
+        <span class="clock-sep">·</span>
+        <span class="clock-item"><span class="clock-city">Singapore</span> <span class="clock-time" id="clock-sin"></span></span>
+      </div>
+    </div>
+    <div class="masthead-actions">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:4px;">Other Trackers</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="index_1.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">Global</a>
+          <a href="india-news.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">South Asia</a>
+          <a href="sea-news.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">SE Asia</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Stats</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-n" id="stat-items">0</div><div class="stat-label">Headlines</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-feeds">0</div><div class="stat-label">Feeds</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-clusters">—</div><div class="stat-label">Clusters</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-top">—</div><div class="stat-label">Top Stories</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Feeds</div>
+      <div class="feed-list" id="feed-list"></div>
+      <button class="btn btn-outline" onclick="toggleAll()" style="margin-top:10px;font-size:0.6rem;padding:6px 10px;">Toggle All</button>
+    </div>
+
+  </aside>
+
+  <main class="content">
+    <section class="stories-section">
+      <div class="sh">
+        <div class="sh-title">Top 10 stories today</div>
+        <div class="sh-rule"></div>
+        <div class="sh-meta" id="stories-meta">Awaiting data</div>
+      </div>
+      <div id="story-grid-wrap">
+        <div class="empty">
+          <div class="empty-title">No stories yet</div>
+          <div class="empty-sub">Fetch feeds to identify today's top stories</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sh">
+        <div class="sh-title">Raw Feed</div>
+        <div class="sh-rule"></div>
+        <select id="raw-filter" class="raw-filter-select" onchange="renderRaw()">
+          <option value="all">All feeds</option>
+        </select>
+        <div class="sh-meta" id="raw-meta">0 items</div>
+      </div>
+      <div id="raw-wrap">
+        <div class="empty">
+          <div class="empty-title">No feed data</div>
+          <div class="empty-sub">Incoming headlines will appear here</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ─────────────────────────────────────
+//  FEEDS — US NEWS TRACKER
+// ─────────────────────────────────────
+const FEEDS = [
+  // ── NATIONAL ──
+  { id:'nyt',        name:'NY Times',          url:'https://rss.nytimes.com/services/xml/rss/nyt/US.xml' },
+  { id:'wapo',       name:'Washington Post',   url:'https://feeds.washingtonpost.com/rss/national' },
+  { id:'politico',   name:'Politico',          url:'https://www.politico.com/rss/politicopicks.xml' },
+  { id:'ap_us',      name:'AP News',           url:'https://feeds.feedburner.com/APTopHeadlines' },
+  { id:'punchbowl',  name:'Punchbowl',         url:'https://news.google.com/rss/search?q=punchbowl+news+congress&ceid=US:en&hl=en-US&gl=US' },
+  { id:'statesnews', name:'States Newsroom',   url:'https://statesnewsroom.com/feed/' },
+
+  // ── ALABAMA ──
+  { id:'al',         name:'AL.com',            url:'https://www.al.com/arc/outboundfeeds/rss/' },
+
+  // ── ARIZONA ──
+  { id:'azcentral',  name:'AZ Central',        url:'https://news.google.com/rss/search?q=azcentral+arizona+news&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── CALIFORNIA ──
+  { id:'latimes',    name:'LA Times',          url:'https://www.latimes.com/local/rss2.0.xml' },
+  { id:'sfchron',    name:'SF Chronicle',      url:'https://news.google.com/rss/search?q=site:sfchronicle.com&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── FLORIDA ──
+  { id:'flphoenix',  name:'Florida Phoenix',   url:'https://floridaphoenix.com/feed/' },
+  { id:'miamiherald',name:'Miami Herald',      url:'https://news.google.com/rss/search?q=miami+herald+florida&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── GEORGIA ──
+  { id:'garecorder', name:'Georgia Recorder',  url:'https://georgiarecorder.com/feed/' },
+
+  // ── ILLINOIS ──
+  { id:'wbez',       name:'WBEZ Chicago',      url:'https://www.wbez.org/rss/all' },
+  { id:'suntimes',   name:'Chicago Sun-Times', url:'https://chicago.suntimes.com/arc/outboundfeeds/rss/' },
+
+  // ── INDIANA ──
+  { id:'indystar',   name:'IndyStar',          url:'https://news.google.com/rss/search?q=indystar+indiana+news&ceid=US:en&hl=en-US&gl=US' },
+  { id:'indy_cap',   name:'IN Capital Chronicle', url:'https://indianacapitalchronicle.com/feed/' },
+
+  // ── LOUISIANA ──
+  { id:'nola',       name:'NOLA.com',          url:'https://www.nola.com/arc/outboundfeeds/rss/' },
+
+  // ── MAINE ──
+  { id:'pressherald',name:'Press Herald',      url:'https://www.pressherald.com/feed/' },
+  { id:'mainems',    name:'Maine Morning Star', url:'https://mainemorningstar.com/feed/' },
+
+  // ── MARYLAND ──
+  { id:'bsun',       name:'Baltimore Sun',     url:'https://news.google.com/rss/search?q=baltimore+sun+maryland&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── MICHIGAN ──
+  { id:'miadv',      name:'Michigan Advance',  url:'https://michiganadvance.com/feed/' },
+
+  // ── MINNESOTA ──
+  { id:'strib',      name:'Star Tribune',      url:'https://www.startribune.com/local/rss' },
+
+  // ── MISSISSIPPI ──
+  { id:'mstoday',    name:'Mississippi Today', url:'https://mississippitoday.org/feed/' },
+  { id:'magnolia',   name:'Magnolia Tribune',  url:'https://magnoliatribune.com/feed/' },
+
+  // ── MONTANA ──
+  { id:'mtfp',       name:'Montana Free Press', url:'https://montanafreepress.org/feed/' },
+
+  // ── NEW HAMPSHIRE ──
+  { id:'concordmon', name:'Concord Monitor',   url:'https://news.google.com/rss/search?q=concord+monitor+new+hampshire&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── NEW YORK ──
+  { id:'gothamist',  name:'Gothamist',         url:'https://gothamist.com/feed' },
+
+  // ── NORTH CAROLINA ──
+  { id:'charlobs',   name:'Charlotte Observer', url:'https://news.google.com/rss/search?q=charlotte+observer+north+carolina&ceid=US:en&hl=en-US&gl=US' },
+  { id:'newsobsv',   name:'News & Observer',   url:'https://news.google.com/rss/search?q=raleigh+news+observer+north+carolina&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── OHIO ──
+  { id:'dispatch',   name:'Columbus Dispatch', url:'https://news.google.com/rss/search?q=columbus+dispatch+ohio&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── OREGON ──
+  { id:'oregonlive', name:'OregonLive',        url:'https://www.oregonlive.com/arc/outboundfeeds/rss/' },
+
+  // ── PENNSYLVANIA ──
+  { id:'inquirer',   name:'Philadelphia Inquirer', url:'https://news.google.com/rss/search?q=philadelphia+inquirer+pennsylvania&ceid=US:en&hl=en-US&gl=US' },
+  { id:'pittpost',   name:'Pittsburgh Post-Gazette', url:'https://news.google.com/rss/search?q=pittsburgh+post+gazette+pennsylvania&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── SOUTH CAROLINA ──
+  { id:'postcour',   name:'Post and Courier',  url:'https://news.google.com/rss/search?q=post+courier+south+carolina&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── TEXAS ──
+  { id:'texastrib',  name:'Texas Tribune',     url:'https://feeds.texastribune.org/texastribune/all' },
+
+  // ── VIRGINIA ──
+  { id:'richmondtms',name:'Richmond Times',    url:'https://news.google.com/rss/search?q=richmond+times+dispatch+virginia&ceid=US:en&hl=en-US&gl=US' },
+  { id:'vamercury',  name:'Virginia Mercury',  url:'https://virginiamercury.com/feed/' },
+];
+
+// Multiple proxies tried in order until one works
+const PROXIES = [
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+];
+
+const STOPWORDS = new Set([
+  'the','a','an','and','or','but','in','on','at','to','for','of','with','by',
+  'from','as','is','was','are','were','be','been','have','has','had','will',
+  'would','could','should','that','this','these','those','it','its','he',
+  'she','they','we','you','who','what','where','when','why','how','after',
+  'before','over','under','into','out','up','down','no','so','if','than',
+  'then','about','also','just','new','says','say','said','amid','despite',
+  'reports','according','two','three','four','five','six','one','more',
+  'while','during','following','within','not','amid','their','his','her',
+]);
+
+let enabledFeeds = new Set(FEEDS.map(f => f.id));
+let allItems = [];
+let feedCounts = {};
+
+// ─────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderFeedList();
+  tick();
+  setInterval(tick, 1000);
+});
+
+function tick() {
+  const now = new Date();
+  document.getElementById('hdr-date').textContent =
+    now.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  const fmt = tz => new Date().toLocaleTimeString('en-GB', { timeZone: tz, hour:'2-digit', minute:'2-digit' });
+  document.getElementById('clock-lon').textContent = fmt('Europe/London');
+  document.getElementById('clock-nyc').textContent = fmt('America/New_York');
+  document.getElementById('clock-sin').textContent = fmt('Asia/Singapore');
+}
+
+// ─────────────────────────────────────
+//  FEED LIST
+// ─────────────────────────────────────
+function renderFeedList() {
+  document.getElementById('feed-list').innerHTML = FEEDS.map(f => `
+    <div class="feed-row ${enabledFeeds.has(f.id) ? 'on' : ''}" id="fr-${f.id}" onclick="toggleFeed('${f.id}')">
+      <div class="feed-dot" id="fd-${f.id}"></div>
+      <div class="feed-name">${f.name}</div>
+      <div class="feed-n" id="fn-${f.id}">${feedCounts[f.id] ?? '—'}</div>
+    </div>
+  `).join('');
+}
+
+function toggleFeed(id) {
+  enabledFeeds.has(id) ? enabledFeeds.delete(id) : enabledFeeds.add(id);
+  renderFeedList();
+  restoreCounts();
+}
+
+function toggleAll() {
+  enabledFeeds = enabledFeeds.size === FEEDS.length
+    ? new Set()
+    : new Set(FEEDS.map(f => f.id));
+  renderFeedList();
+  restoreCounts();
+}
+
+function restoreCounts() {
+  Object.entries(feedCounts).forEach(([id, n]) => {
+    const el = document.getElementById(`fn-${id}`);
+    if (el) el.textContent = n;
+  });
+}
+
+// ─────────────────────────────────────
+//  FETCH
+// ─────────────────────────────────────
+async function fetchAllFeeds() {
+  const btn = document.getElementById('btn-fetch');
+  btn.disabled = true;
+  document.getElementById('fetch-icon').textContent = '⟳';
+
+  allItems = [];
+  feedCounts = {};
+
+  const active = FEEDS.filter(f => enabledFeeds.has(f.id));
+  document.getElementById('stat-feeds').textContent = active.length;
+  setStatus('amber', `Fetching ${active.length} feeds…`);
+
+  // Mark all as loading
+  active.forEach(f => setFeedState(f.id, 'loading'));
+
+  let done = 0;
+  await Promise.all(active.map(async feed => {
+    try {
+      const items = await fetchFeed(feed);
+      feedCounts[feed.id] = items.length;
+      allItems.push(...items);
+      setFeedState(feed.id, 'on', items.length);
+      done++;
+      document.getElementById('stat-items').textContent = allItems.length;
+      setStatus('amber', `Loaded ${done}/${active.length} — ${allItems.length} items`);
+      renderRaw();
+    } catch(e) {
+      setFeedState(feed.id, 'err', 'ERR');
+      console.warn(feed.name, e.message);
+    }
+  }));
+
+  btn.disabled = false;
+  document.getElementById('fetch-icon').textContent = '↺';
+
+  const now = new Date();
+  document.getElementById('last-refreshed').textContent =
+    'Last refreshed ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+  if (allItems.length > 0) {
+    setStatus('green', `✓ ${allItems.length} headlines from ${done} feeds — clustering…`);
+    clusterAndRender();
+  } else {
+    setStatus('red', 'No items loaded — try refreshing or check your connection');
+  }
+}
+
+async function fetchFeed(feed) {
+  let lastError;
+  for (const proxyFn of PROXIES) {
+    try {
+      const r = await fetch(proxyFn(feed.url), { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const text = await r.text();
+      // allorigins wraps in JSON; others return raw XML
+      let xml;
+      try {
+        const json = JSON.parse(text);
+        xml = json.contents ?? json;
+      } catch {
+        xml = text;
+      }
+      if (!xml || xml.length < 50) throw new Error('Empty response');
+      const items = parseFeed(xml, feed);
+      if (items.length === 0) throw new Error('No items parsed');
+      return items;
+    } catch(e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
+}
+
+function parseFeed(xml, feed) {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const out = [];
+
+  const push = (title, link, date, desc) => {
+    if (!title || title.length < 6) return;
+    out.push({
+      title: clean(title),
+      link: link || '',
+      date: date ? new Date(date) : new Date(),
+      source: feed.name,
+      sourceId: feed.id,
+      desc: desc ? clean(desc).slice(0, 300) : '',
+    });
+  };
+
+  doc.querySelectorAll('item').forEach(el =>
+    push(
+      el.querySelector('title')?.textContent,
+      el.querySelector('link')?.textContent?.trim() || el.querySelector('link')?.getAttribute('href'),
+      el.querySelector('pubDate')?.textContent,
+      el.querySelector('description')?.textContent
+    )
+  );
+
+  if (!out.length) {
+    doc.querySelectorAll('entry').forEach(el =>
+      push(
+        el.querySelector('title')?.textContent,
+        el.querySelector('link')?.getAttribute('href'),
+        el.querySelector('updated')?.textContent,
+        el.querySelector('summary')?.textContent || el.querySelector('content')?.textContent
+      )
+    );
+  }
+
+  return out.slice(0, 50);
+}
+
+function clean(t) {
+  return t.replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')
+    .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+
+// ─────────────────────────────────────
+//  KEYWORD SIMILARITY
+// ─────────────────────────────────────
+function getKeywords(title) {
+  const words = title.toLowerCase().replace(/[^a-z0-9'\-]/g, ' ').split(/\s+/);
+  const kw = new Set();
+  words.forEach((w, i) => {
+    if (w.length >= 3 && !STOPWORDS.has(w)) kw.add(w);
+    // also add bigrams for names/places (first 8 words)
+    if (i < 8 && words[i+1] && words[i+1].length >= 3 && !STOPWORDS.has(words[i+1])) {
+      kw.add(`${w}_${words[i+1]}`);
+    }
+  });
+  return kw;
+}
+
+function similarity(titleA, titleB) {
+  const a = getKeywords(titleA);
+  const b = getKeywords(titleB);
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  a.forEach(w => { if (b.has(w)) inter++; });
+  return inter / Math.sqrt(a.size * b.size);
+}
+
+// ─────────────────────────────────────
+//  GREEDY CLUSTERING
+// ─────────────────────────────────────
+const SIM_THRESHOLD = 0.20;
+
+function cluster(items) {
+  // Sort newest first so cluster representative = freshest
+  const sorted = [...items].sort((a, b) => b.date - a.date);
+  const used = new Uint8Array(sorted.length);
+  const clusters = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (used[i]) continue;
+    const group = [sorted[i]];
+    used[i] = 1;
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (used[j]) continue;
+      if (similarity(sorted[i].title, sorted[j].title) >= SIM_THRESHOLD) {
+        group.push(sorted[j]);
+        used[j] = 1;
+      }
+    }
+    clusters.push(group);
+  }
+  return clusters;
+}
+
+function score(group) {
+  const outlets = new Set(group.map(i => i.source));
+  const latestMs = Math.max(...group.map(i => i.date.getTime()));
+  return outlets.size * 4 + group.length + (latestMs / 1e12);
+}
+
+// ─────────────────────────────────────
+//  STATE BADGE
+// ─────────────────────────────────────
+const STATE_NAMES = {
+  'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California',
+  'CO':'Colorado','CT':'Connecticut','DE':'Delaware','FL':'Florida','GA':'Georgia',
+  'HI':'Hawaii','ID':'Idaho','IL':'Illinois','IN':'Indiana','IA':'Iowa',
+  'KS':'Kansas','KY':'Kentucky','LA':'Louisiana','ME':'Maine','MD':'Maryland',
+  'MA':'Massachusetts','MI':'Michigan','MN':'Minnesota','MS':'Mississippi','MO':'Missouri',
+  'MT':'Montana','NE':'Nebraska','NV':'Nevada','NH':'New Hampshire','NJ':'New Jersey',
+  'NM':'New Mexico','NY':'New York','NC':'North Carolina','ND':'North Dakota','OH':'Ohio',
+  'OK':'Oklahoma','OR':'Oregon','PA':'Pennsylvania','RI':'Rhode Island','SC':'South Carolina',
+  'SD':'South Dakota','TN':'Tennessee','TX':'Texas','UT':'Utah','VT':'Vermont',
+  'VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming',
+};
+
+function detectState(group) {
+  const text = group.map(i => i.title.toLowerCase()).join(' ');
+  for (const [abbr, keywords] of Object.entries(STATE_KEYWORDS)) {
+    for (const kw of keywords) {
+      const idx = text.indexOf(kw);
+      if (idx === -1) continue;
+      const before = idx === 0 || /[^a-z]/.test(text[idx - 1]);
+      const after  = idx + kw.length >= text.length || /[^a-z]/.test(text[idx + kw.length]);
+      if (before && after) {
+        if (abbr === 'WA' && /washington\s*(d\.?c\.?|district)/.test(text)) continue;
+        return abbr;
+      }
+    }
+  }
+  return null;
+}
+
+function stateBadge(group) {
+  const abbr = detectState(group);
+  if (!abbr) {
+    return `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;background:var(--red);color:#fff;padding:2px 6px;letter-spacing:1px;text-transform:uppercase;">National</span>`;
+  }
+  const name = STATE_NAMES[abbr] || abbr;
+  return `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;border:1px solid #1a4a8b;color:#1a4a8b;padding:2px 6px;letter-spacing:1px;text-transform:uppercase;">${name}</span>`;
+}
+
+// ─────────────────────────────────────
+//  CLUSTER → RENDER
+// ─────────────────────────────────────
+function clusterAndRender() {
+  setTimeout(() => {
+    const clusters = cluster(allItems);
+    clusters.sort((a, b) => score(b) - score(a));
+
+    // Prefer multi-outlet stories; always show at least 7
+    const top = clusters
+      .filter(g => new Set(g.map(i => i.source)).size >= 2 || clusters.indexOf(g) < 10)
+      .slice(0, 10);
+
+    document.getElementById('stat-clusters').textContent = clusters.length;
+    document.getElementById('stat-top').textContent = top.length;
+
+    renderStories(top);
+    setStatus('green', `✓ ${clusters.length} clusters · top ${top.length} stories identified`);
+  }, 60);
+}
+
+function renderStories(top) {
+  const outletCount = new Set(allItems.map(i => i.source)).size;
+  document.getElementById('stories-meta').textContent =
+    `${allItems.length} headlines · ${outletCount} outlet${outletCount !== 1 ? 's' : ''}`;
+
+  if (!top.length) {
+    document.getElementById('story-grid-wrap').innerHTML =
+      '<div class="empty"><div class="empty-title">No clusters found</div><div class="empty-sub">Try enabling more feeds</div></div>';
+    return;
+  }
+
+  const cards = top.map((group, idx) => {
+    const outlets = [...new Set(group.map(i => i.source))];
+    const rep = group[0];
+
+    const links = [...new Map(group.filter(i => i.link).map(i => [i.source, i])).values()]
+      .slice(0, 5)
+      .map(i => `<a class="story-link" href="${i.link}" target="_blank" rel="noopener">${i.source}</a>`)
+      .join('');
+
+    const chips = outlets.map(o => `<span class="outlet-chip">${o}</span>`).join('');
+
+    return `
+      <div class="story-card">
+        <div class="story-rank">
+          #${idx + 1} &nbsp;·&nbsp; ${outlets.length} outlet${outlets.length !== 1 ? 's' : ''}
+          &nbsp;·&nbsp; ${group.length} headline${group.length !== 1 ? 's' : ''}
+        </div>
+        <div style="margin-bottom:5px;">${stateBadge(group)}</div>
+        <div class="story-hed">${rep.title}</div>
+        <div class="story-outlets">${chips}</div>
+        ${links ? `<div class="story-links">${links}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('story-grid-wrap').innerHTML = `<div class="story-grid">${cards}</div>`;
+}
+
+// ─────────────────────────────────────
+//  RAW FEED
+// ─────────────────────────────────────
+function renderRaw() {
+  const select = document.getElementById('raw-filter');
+  const chosen = select ? select.value : 'all';
+
+  // Rebuild dropdown options from current sources
+  const sources = ['all', ...new Set(allItems.map(i => i.source))].sort((a,b) => a === 'all' ? -1 : a.localeCompare(b));
+  if (select) {
+    select.innerHTML = sources.map(s =>
+      `<option value="${s}" ${s === chosen ? 'selected' : ''}>${s === 'all' ? 'All feeds' : s}</option>`
+    ).join('');
+  }
+
+  const filtered = chosen === 'all'
+    ? allItems
+    : allItems.filter(i => i.source === chosen);
+
+  const sorted = [...filtered].sort((a, b) => b.date - a.date);
+  document.getElementById('raw-meta').textContent = `${sorted.length} item${sorted.length !== 1 ? 's' : ''}`;
+
+  if (!sorted.length) {
+    document.getElementById('raw-wrap').innerHTML = `
+      <div class="empty">
+        <div class="empty-title">No items</div>
+        <div class="empty-sub">No headlines from this feed yet</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('raw-wrap').innerHTML = `
+    <div class="raw-table">
+      ${sorted.map(i => {
+        const badge = stateBadge([i]).replace('font-size:0.52rem', 'font-size:0.48rem').replace('padding:2px 6px', 'padding:1px 4px');
+        return `
+        <div class="raw-row">
+          <div class="raw-src">${i.source}</div>
+          <div class="raw-hed"><span style="display:inline-block;margin-bottom:3px;">${badge}</span><br><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></div>
+          <div class="raw-time">${ago(i.date)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function ago(d) {
+  const m = (Date.now() - d) / 60000;
+  if (m < 60) return `${Math.round(m)}m ago`;
+  if (m < 1440) return `${Math.round(m / 60)}h ago`;
+  return d.toLocaleDateString();
+}
+
+// ─────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────
+function setStatus(type, msg) {
+  document.getElementById('status-dot').className = `dot ${type}`;
+  document.getElementById('status-text').textContent = msg;
+}
+
+// ─────────────────────────────────────
+//  STATE → DEDICATED FEED MAPPING
+// ─────────────────────────────────────
+const STATE_FEEDS = {
+  'AL': ['al'],
+  'AZ': ['azcentral'],
+  'CA': ['latimes','sfchron'],
+  'FL': ['flphoenix','miamiherald'],
+  'GA': ['garecorder'],
+  'IL': ['wbez','suntimes'],
+  'IN': ['indystar','indy_cap'],
+  'LA': ['nola'],
+  'ME': ['pressherald','mainems'],
+  'MD': ['bsun'],
+  'MI': ['miadv'],
+  'MN': ['strib'],
+  'MS': ['mstoday','magnolia'],
+  'MT': ['mtfp'],
+  'NH': ['concordmon'],
+  'NY': ['gothamist','nyt'],
+  'NC': ['charlobs','newsobsv'],
+  'OH': ['dispatch'],
+  'OR': ['oregonlive'],
+  'PA': ['inquirer','pittpost'],
+  'SC': ['postcour'],
+  'TX': ['texastrib'],
+  'VA': ['richmondtms','vamercury'],
+};
+
+// Keywords to match each state in national feed headlines/descriptions
+// Multiple terms increase match chances; ordered most-specific first
+const STATE_KEYWORDS = {
+  'AL': ['alabama','birmingham','montgomery','huntsville','mobile'],
+  'AK': ['alaska','anchorage','juneau','fairbanks'],
+  'AZ': ['arizona','phoenix','tucson','scottsdale','tempe','mesa'],
+  'AR': ['arkansas','little rock','fayetteville'],
+  'CA': ['california','los angeles','san francisco','sacramento','san diego','oakland','san jose'],
+  'CO': ['colorado','denver','boulder','colorado springs','fort collins'],
+  'CT': ['connecticut','hartford','new haven','bridgeport'],
+  'DE': ['delaware','wilmington','dover'],
+  'FL': ['florida','miami','orlando','tampa','jacksonville','tallahassee'],
+  'GA': ['georgia','atlanta','savannah','augusta'],
+  'HI': ['hawaii','honolulu','maui'],
+  'ID': ['idaho','boise','coeur d\'alene','idaho falls'],
+  'IL': ['illinois','chicago','springfield'],
+  'IN': ['indiana','indianapolis','fort wayne'],
+  'IA': ['iowa','des moines','iowa city','cedar rapids'],
+  'KS': ['kansas','wichita','topeka','kansas city'],
+  'KY': ['kentucky','louisville','lexington','frankfort'],
+  'LA': ['louisiana','new orleans','baton rouge','shreveport'],
+  'ME': ['maine','portland','augusta','bangor'],
+  'MD': ['maryland','baltimore','annapolis','bethesda'],
+  'MA': ['massachusetts','boston','cambridge','worcester','springfield'],
+  'MI': ['michigan','detroit','grand rapids','lansing','flint'],
+  'MN': ['minnesota','minneapolis','saint paul','duluth'],
+  'MS': ['mississippi','jackson','biloxi','hattiesburg'],
+  'MO': ['missouri','st. louis','kansas city','jefferson city','columbia'],
+  'MT': ['montana','billings','missoula','great falls','helena'],
+  'NE': ['nebraska','omaha','lincoln','bellevue'],
+  'NV': ['nevada','las vegas','reno','henderson'],
+  'NH': ['new hampshire','manchester','concord','nashua'],
+  'NJ': ['new jersey','newark','jersey city','trenton','camden'],
+  'NM': ['new mexico','albuquerque','santa fe','las cruces'],
+  'NY': ['new york','brooklyn','manhattan','bronx','queens','buffalo','albany'],
+  'NC': ['north carolina','charlotte','raleigh','durham','greensboro'],
+  'ND': ['north dakota','fargo','bismarck','grand forks'],
+  'OH': ['ohio','columbus','cleveland','cincinnati','toledo','akron'],
+  'OK': ['oklahoma','oklahoma city','tulsa','norman'],
+  'OR': ['oregon','portland','salem','eugene','bend'],
+  'PA': ['pennsylvania','philadelphia','pittsburgh','harrisburg','allentown'],
+  'RI': ['rhode island','providence','warwick','cranston'],
+  'SC': ['south carolina','columbia','charleston','greenville','myrtle beach'],
+  'SD': ['south dakota','sioux falls','rapid city','pierre'],
+  'TN': ['tennessee','nashville','memphis','knoxville','chattanooga'],
+  'TX': ['texas','houston','dallas','san antonio','austin','fort worth','el paso'],
+  'UT': ['utah','salt lake city','provo','ogden'],
+  'VT': ['vermont','burlington','montpelier','rutland'],
+  'VA': ['virginia','richmond','virginia beach','norfolk','arlington','fairfax'],
+  'WA': ['seattle','spokane','tacoma','olympia','washington state','everett','bellevue'],
+  'WV': ['west virginia','charleston','huntington','morgantown'],
+  'WI': ['wisconsin','milwaukee','madison','green bay'],
+  'WY': ['wyoming','cheyenne','casper','laramie'],
+};
+
+// National feed IDs — used as fallback keyword search pool
+const NATIONAL_FEED_IDS = ['nyt','wapo','politico','ap_us','punchbowl','statesnews'];
+
+// ─────────────────────────────────────
+//  BUILD STATE STORIES INDEX
+// ─────────────────────────────────────
+function buildStateStories() {
+  const stateStories = {};
+
+  // Pass 1: dedicated state feeds (highest confidence)
+  Object.entries(STATE_FEEDS).forEach(([code, feedIds]) => {
+    const items = allItems.filter(i => feedIds.includes(i.sourceId));
+    if (items.length > 0) {
+      items.sort((a, b) => b.date - a.date);
+      stateStories[code] = { items, source: 'dedicated' };
+    }
+  });
+
+  // Pass 2: keyword scan of ALL items (national + any state feeds) for uncovered states
+  const nationalItems = allItems.filter(i => NATIONAL_FEED_IDS.includes(i.sourceId));
+  // Also include state-feed items that might mention other states
+  const allSearchable = allItems;
+
+  Object.entries(STATE_KEYWORDS).forEach(([code, keywords]) => {
+    if (stateStories[code]) return; // already covered by dedicated feed
+
+    const matches = [];
+    allSearchable.forEach(item => {
+      const text = (item.title + ' ' + (item.desc || '')).toLowerCase();
+      for (let ki = 0; ki < keywords.length; ki++) {
+        const kw = keywords[ki];
+        // Use word-boundary-aware check: keyword must be preceded/followed by non-alpha
+        const idx = text.indexOf(kw);
+        if (idx === -1) continue;
+        const before = idx === 0 || /[^a-z]/.test(text[idx - 1]);
+        const after  = idx + kw.length >= text.length || /[^a-z]/.test(text[idx + kw.length]);
+        if (!before || !after) continue;
+        // Exclude "washington dc/d.c." matches from counting as Washington state
+        if (code === 'WA' && /washington\s*(d\.?c\.?|district)/.test(text)) continue;
+        matches.push({ item, kwIndex: ki });
+        break;
+      }
+    });
+
+    if (matches.length > 0) {
+      matches.sort((a, b) => {
+        if (a.kwIndex !== b.kwIndex) return a.kwIndex - b.kwIndex;
+        return b.item.date - a.item.date;
+      });
+      stateStories[code] = {
+        items: matches.map(m => m.item),
+        source: 'national'
+      };
+    }
+  });
+
+  return stateStories;
+}
+
+// ─────────────────────────────────────
+//  RENDER MAP
+// ─────────────────────────────────────
+function renderMap() {
+  const stateStories = buildStateStories();
+  const dedicated = Object.values(stateStories).filter(s => s.source === 'dedicated').length;
+  const national  = Object.values(stateStories).filter(s => s.source === 'national').length;
+  document.getElementById('map-meta').textContent =
+    `${dedicated + national} states covered · ${dedicated} dedicated feeds · ${national} via national sources`;
+
+  document.getElementById('map-wrap').innerHTML = `
+    <div class="map-container">
+      <svg class="us-map" viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg">
+        ${US_PATHS.map(s => {
+          const ss = stateStories[s.abbr];
+          const cls = ss ? (ss.source === 'dedicated' ? ' has-news' : ' has-national') : '';
+          return `<path id="state-${s.abbr}"
+            class="state-path${cls}"
+            d="${s.d}"
+            data-state="${s.abbr}"
+            onmouseenter="showTooltip(event,'${s.abbr}')"
+            onmouseleave="hideTooltip()"
+            onclick="selectState('${s.abbr}')"
+          ><title>${STATE_NAMES[s.abbr]}</title></path>`;
+        }).join('')}
+        ${US_PATHS.filter(s => s.lx).map(s => {
+          const ss = stateStories[s.abbr];
+          const fill = ss ? (ss.source === 'dedicated' ? '#1a3a4a' : '#3a3a2a') : '#999';
+          const weight = ss ? '600' : '400';
+          return `<text x="${s.lx}" y="${s.ly}"
+            style="font-family:'IBM Plex Mono',monospace;font-size:7px;fill:${fill};text-anchor:middle;pointer-events:none;font-weight:${weight}">
+            ${s.abbr}
+          </text>`;
+        }).join('')}
+      </svg>
+      <div class="map-legend">
+        <span><span class="legend-swatch" style="background:#b8d4e8;"></span>Dedicated feed</span>
+        <span><span class="legend-swatch" style="background:#c8d4a8;"></span>National sources</span>
+        <span><span class="legend-swatch" style="background:#ddd8ce;"></span>No coverage</span>
+        <span><span class="legend-swatch" style="background:var(--red);"></span>Selected</span>
+      </div>
+    </div>
+    <div class="state-panel" id="state-panel">
+      <div class="state-panel-name" id="state-panel-name"></div>
+      <div id="state-panel-stories"></div>
+    </div>
+    <div class="map-tooltip" id="map-tooltip">
+      <div class="tooltip-state" id="tt-state"></div>
+      <div class="tooltip-hed" id="tt-hed"></div>
+      <div class="tooltip-src" id="tt-src"></div>
+    </div>
+  `;
+
+  window._stateStories = stateStories;
+}
+
+function showTooltip(e, abbr) {
+  const ss = window._stateStories || {};
+  if (!ss[abbr]) return;
+  const top = ss[abbr].items[0];
+  const badge = ss[abbr].source === 'national' ? ' (national)' : '';
+  document.getElementById('tt-state').textContent = STATE_NAMES[abbr] + badge;
+  document.getElementById('tt-hed').textContent = top.title;
+  document.getElementById('tt-src').textContent = top.source;
+  const tt = document.getElementById('map-tooltip');
+  tt.classList.add('show');
+  positionTooltip(e, tt);
+}
+
+function positionTooltip(e, tt) {
+  const x = e.clientX + 14;
+  const y = e.clientY - 10;
+  const w = window.innerWidth;
+  tt.style.left = (x + 310 > w ? x - 330 : x) + 'px';
+  tt.style.top = y + 'px';
+  document.addEventListener('mousemove', function mm(ev) {
+    tt.style.left = (ev.clientX + 14 + 310 > window.innerWidth ? ev.clientX - 330 : ev.clientX + 14) + 'px';
+    tt.style.top = (ev.clientY - 10) + 'px';
+    if (!ev.target.closest('.state-path')) {
+      tt.classList.remove('show');
+      document.removeEventListener('mousemove', mm);
+    }
+  });
+}
+
+function hideTooltip() {
+  const tt = document.getElementById('map-tooltip');
+  if (tt) tt.classList.remove('show');
+}
+
+let selectedState = null;
+function selectState(abbr) {
+  const ss = window._stateStories || {};
+  if (!ss[abbr]) return;
+
+  if (selectedState) {
+    const prev = document.getElementById(`state-${selectedState}`);
+    if (prev) prev.classList.remove('active');
+  }
+
+  if (selectedState === abbr) {
+    selectedState = null;
+    document.getElementById('state-panel').classList.remove('show');
+    return;
+  }
+
+  selectedState = abbr;
+  const el = document.getElementById(`state-${abbr}`);
+  if (el) el.classList.add('active');
+
+  const panel = document.getElementById('state-panel');
+  const badge = ss[abbr].source === 'national'
+    ? '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:0.6rem;color:var(--muted);font-weight:400;margin-left:10px;">via national sources</span>'
+    : '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:0.6rem;color:#2a7a2a;font-weight:400;margin-left:10px;">dedicated feed</span>';
+  document.getElementById('state-panel-name').innerHTML = STATE_NAMES[abbr] + badge;
+
+  const stories = ss[abbr].items.slice(0, 8);
+  document.getElementById('state-panel-stories').innerHTML = stories.map(i => `
+    <div class="state-story-row">
+      <div class="raw-src">${i.source}</div>
+      <div class="raw-hed"><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></div>
+      <div class="raw-time">${ago(i.date)}</div>
+    </div>
+  `).join('');
+
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─────────────────────────────────────
+//  US STATE SVG PATHS
+//  Simplified Albers projection paths
+//  lx/ly = label centre coordinates
+// ─────────────────────────────────────
+function setFeedState(id, state, count) {
+  const row = document.getElementById(`fr-${id}`);
+  const n   = document.getElementById(`fn-${id}`);
+  if (row) row.className = `feed-row ${state}`;
+  if (n && count !== undefined) n.textContent = count;
+}
+</script>
+  {abbr:'AL',lx:612,ly:440,d:'M 594 354 L 595 403 L 598 445 L 628 443 L 633 430 L 627 354 Z'},
+  {abbr:'AK',lx:138,ly:534,d:'M 80 480 L 78 530 L 100 548 L 140 555 L 175 548 L 190 530 L 185 510 L 165 495 L 140 480 Z'},
+  {abbr:'AZ',lx:191,ly:380,d:'M 155 310 L 150 410 L 220 415 L 240 400 L 250 340 L 220 315 Z'},
+  {abbr:'AR',lx:563,ly:390,d:'M 530 358 L 528 400 L 568 402 L 597 400 L 597 358 L 563 355 Z'},
+  {abbr:'CA',lx:99,ly:320,d:'M 80 220 L 75 310 L 85 370 L 120 395 L 145 380 L 148 330 L 155 310 L 130 270 L 110 230 Z'},
+  {abbr:'CO',lx:279,ly:313,d:'M 250 280 L 252 350 L 340 348 L 340 278 Z'},
+  {abbr:'CT',lx:812,ly:212,d:'M 800 195 L 798 220 L 822 222 L 824 200 Z'},
+  {abbr:'DE',lx:792,ly:248,d:'M 785 235 L 782 262 L 797 265 L 800 240 Z'},
+  {abbr:'FL',lx:658,ly:480,d:'M 598 445 L 600 470 L 615 500 L 645 520 L 670 510 L 680 490 L 668 460 L 660 445 L 633 443 Z'},
+  {abbr:'GA',lx:641,ly:415,d:'M 628 364 L 628 443 L 660 445 L 668 430 L 670 400 L 660 365 Z'},
+  {abbr:'HI',lx:280,ly:548,d:'M 235 535 L 248 548 L 258 542 L 248 530 Z M 265 530 L 278 545 L 290 540 L 278 525 Z M 295 525 L 308 540 L 318 535 L 308 520 Z'},
+  {abbr:'ID',lx:175,ly:215,d:'M 160 155 L 158 220 L 175 238 L 200 230 L 210 200 L 205 155 Z'},
+  {abbr:'IL',lx:571,ly:295,d:'M 555 255 L 552 320 L 556 350 L 578 352 L 590 330 L 588 255 Z'},
+  {abbr:'IN',lx:600,ly:293,d:'M 590 258 L 588 330 L 615 330 L 618 258 Z'},
+  {abbr:'IA',lx:519,ly:255,d:'M 490 235 L 490 278 L 555 278 L 555 235 Z'},
+  {abbr:'KS',lx:430,ly:338,d:'M 380 318 L 380 358 L 480 358 L 480 318 Z'},
+  {abbr:'KY',lx:622,ly:345,d:'M 560 328 L 558 358 L 597 358 L 627 354 L 640 340 L 625 328 Z'},
+  {abbr:'LA',lx:553,ly:452,d:'M 528 410 L 528 445 L 545 462 L 570 462 L 582 445 L 598 445 L 598 410 L 568 402 Z'},
+  {abbr:'ME',lx:865,ly:138,d:'M 848 115 L 844 160 L 870 162 L 878 138 L 865 115 Z'},
+  {abbr:'MD',lx:763,ly:260,d:'M 722 248 L 718 268 L 758 272 L 782 262 L 785 248 L 760 242 Z'},
+  {abbr:'MA',lx:838,ly:192,d:'M 812 180 L 810 200 L 845 202 L 858 188 L 840 178 Z'},
+  {abbr:'MI',lx:595,ly:218,d:'M 560 188 L 558 242 L 590 245 L 618 240 L 622 210 L 600 188 Z M 600 175 L 598 185 L 618 185 L 628 172 L 618 165 Z'},
+  {abbr:'MN',lx:497,ly:178,d:'M 460 145 L 458 225 L 495 228 L 530 225 L 535 175 L 520 145 Z'},
+  {abbr:'MS',lx:578,ly:422,d:'M 563 355 L 563 403 L 570 462 L 582 445 L 582 402 L 597 400 L 597 355 Z'},
+  {abbr:'MO',lx:536,ly:330,d:'M 480 298 L 480 358 L 530 358 L 560 358 L 558 298 Z'},
+  {abbr:'MT',lx:240,ly:165,d:'M 175 138 L 175 195 L 275 198 L 285 195 L 285 138 Z'},
+  {abbr:'NE',lx:415,ly:282,d:'M 370 258 L 368 318 L 480 318 L 480 278 L 460 258 Z'},
+  {abbr:'NV',lx:148,ly:290,d:'M 130 240 L 130 320 L 155 360 L 175 340 L 180 280 L 160 235 Z'},
+  {abbr:'NH',lx:840,ly:160,d:'M 832 140 L 830 180 L 848 182 L 848 145 Z'},
+  {abbr:'NJ',lx:798,ly:232,d:'M 792 215 L 790 245 L 808 248 L 810 220 Z'},
+  {abbr:'NM',lx:240,ly:378,d:'M 220 315 L 218 415 L 298 415 L 298 318 L 250 315 Z'},
+  {abbr:'NY',lx:770,ly:192,d:'M 720 170 L 718 215 L 760 218 L 790 215 L 800 195 L 780 170 Z'},
+  {abbr:'NC',lx:693,ly:362,d:'M 640 348 L 638 372 L 700 375 L 738 368 L 742 355 L 700 348 Z'},
+  {abbr:'ND',lx:390,ly:155,d:'M 358 138 L 358 180 L 460 182 L 462 138 Z'},
+  {abbr:'OH',lx:648,ly:280,d:'M 620 255 L 618 328 L 650 330 L 675 315 L 678 258 L 650 252 Z'},
+  {abbr:'OK',lx:428,ly:378,d:'M 370 358 L 368 398 L 480 400 L 530 398 L 530 360 L 480 358 Z'},
+  {abbr:'OR',lx:130,ly:218,d:'M 90 185 L 88 255 L 130 258 L 158 255 L 160 218 L 138 188 Z'},
+  {abbr:'PA',lx:730,ly:228,d:'M 690 210 L 688 252 L 755 255 L 760 218 L 735 208 Z'},
+  {abbr:'RI',lx:828,ly:212,d:'M 822 205 L 820 222 L 832 224 L 833 208 Z'},
+  {abbr:'SC',lx:682,ly:395,d:'M 660 365 L 658 400 L 695 410 L 712 395 L 700 370 L 678 360 Z'},
+  {abbr:'SD',lx:388,ly:208,d:'M 358 180 L 358 235 L 460 238 L 462 182 Z'},
+  {abbr:'TN',lx:617,ly:368,d:'M 558 358 L 558 382 L 600 385 L 640 382 L 640 360 L 597 358 Z'},
+  {abbr:'TX',lx:393,ly:430,d:'M 298 318 L 295 440 L 340 475 L 400 480 L 450 460 L 480 420 L 480 398 L 368 398 L 370 358 L 340 350 L 300 320 Z'},
+  {abbr:'UT',lx:213,ly:318,d:'M 218 278 L 218 378 L 255 380 L 252 278 Z'},
+  {abbr:'VT',lx:822,ly:162,d:'M 816 142 L 814 180 L 832 180 L 832 142 Z'},
+  {abbr:'VA',lx:720,ly:300,d:'M 678 278 L 675 315 L 700 320 L 742 315 L 745 295 L 722 270 L 700 272 Z'},
+  {abbr:'WA',lx:130,ly:152,d:'M 90 125 L 88 185 L 140 188 L 160 185 L 165 155 L 138 125 Z'},
+  {abbr:'WV',lx:688,ly:295,d:'M 660 268 L 655 315 L 678 318 L 682 295 L 675 265 Z'},
+  {abbr:'WI',lx:550,ly:195,d:'M 518 165 L 515 228 L 558 232 L 560 168 Z'},
+  {abbr:'WY',lx:270,ly:232,d:'M 242 198 L 240 270 L 342 272 L 342 200 Z'},
+];
+
+</body>
+</html>

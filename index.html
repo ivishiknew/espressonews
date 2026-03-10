@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Espresso News Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Global News Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink: #111010;
-  --paper: #f4efe6;
-  --cream: #ece6d9;
-  --rule: #222;
-  --red: #c0251e;
-  --muted: #6b6458;
-  --border: #2a2a2a;
+  --red: #E3120B;
+  --ink: #121212;
+  --paper: #FFFFFF;
+  --cream: #F7F7F7;
+  --muted: #777777;
+  --border: #CCCCCC;
+  --border-dark: #333333;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,14 +21,15 @@
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: 'Lato', Arial, sans-serif;
   font-size: 14px;
   min-height: 100vh;
 }
 
 /* ── MASTHEAD ── */
 .masthead {
-  border-bottom: 4px double var(--border);
+  border-top: 5px solid var(--red);
+  border-bottom: 1px solid var(--border-dark);
   background: var(--paper);
   position: sticky;
   top: 0;
@@ -42,28 +43,20 @@ body {
 }
 
 .masthead-logo {
-  padding: 14px 32px 12px;
+  padding: 12px 28px 10px;
   border-right: 1px solid var(--border);
 }
 
 .logo-word {
-  font-family: 'Playfair Display', serif;
-  font-size: 2.1rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -1px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  color: var(--ink);
 }
 
 .logo-word em { font-style: normal; color: var(--red); }
-
-.logo-sub {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.58rem;
-  letter-spacing: 4px;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-top: 2px;
-}
 
 .masthead-date {
   flex: 1;
@@ -76,55 +69,35 @@ body {
 }
 
 .date-main {
-  font-family: 'Playfair Display', serif;
-  font-size: 0.9rem;
-  font-style: italic;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--ink);
+  font-weight: 500;
 }
 
 .clocks {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
-.clock-item {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  color: var(--muted);
-}
-
-.clock-city {
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 0.55rem;
-  color: var(--muted);
-  margin-right: 4px;
-}
-
-.clock-time {
-  color: var(--ink);
-  font-weight: 500;
-}
-
-.clock-sep {
-  color: #ccc;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.6rem;
-}
+.clock-item { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); }
+.clock-city { text-transform: uppercase; letter-spacing: 1px; font-size: 0.52rem; color: var(--muted); margin-right: 3px; }
+.clock-time { color: var(--ink); font-weight: 500; }
+.clock-sep { color: #ccc; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; }
 
 .masthead-actions {
-  padding: 12px 24px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
 }
-
 
 /* ── LAYOUT ── */
 .layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 260px 1fr;
   min-height: calc(100vh - 90px);
 }
 
@@ -169,298 +142,86 @@ body {
   white-space: nowrap;
 }
 
-.btn-primary {
-  background: var(--ink);
-  color: var(--paper);
-  width: auto;
-  justify-content: center;
-}
-
-.btn-primary:hover:not(:disabled) { background: #333; }
-.btn-primary:disabled { background: #999; cursor: not-allowed; }
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--ink);
-  width: 100%;
-  justify-content: center;
-}
-
+.btn-primary { background: var(--red); color: #fff; width: auto; justify-content: center; }
+.btn-primary:hover:not(:disabled) { background: #c00f08; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+.btn-outline { background: transparent; border: 1px solid var(--border-dark); color: var(--ink); width: 100%; justify-content: center; }
 .btn-outline:hover { background: var(--ink); color: var(--paper); }
 
 /* STATUS */
-.status-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  color: var(--muted);
-  margin-bottom: 14px;
-  min-height: 18px;
-}
-
-.dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #ccc;
-  flex-shrink: 0;
-}
-
+.status-pill { display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); margin-bottom: 12px; min-height: 18px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
 .dot.green { background: #27ae60; animation: pulse 1.5s infinite; }
 .dot.red { background: var(--red); }
 .dot.amber { background: #e67e22; animation: pulse 1s infinite; }
-
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
 /* FEED TOGGLES */
-.feed-list { display: flex; flex-direction: column; gap: 4px; }
-
-.feed-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.12s;
-  user-select: none;
-}
-
-.feed-row:hover { border-color: #ccc; background: var(--paper); }
-.feed-row.on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
-.feed-row.on .feed-dot { background: #27ae60; }
+.feed-list { display: flex; flex-direction: column; gap: 1px; }
+.feed-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; cursor: pointer; border-left: 2px solid transparent; transition: all 0.12s; user-select: none; }
+.feed-row:hover { border-left-color: var(--border); background: var(--paper); }
+.feed-row.on { border-left-color: var(--red); background: var(--paper); color: var(--ink); }
+.feed-row.on .feed-dot { background: var(--red); }
 .feed-row.loading .feed-dot { background: #e67e22; animation: pulse 0.8s infinite; }
-.feed-row.err .feed-dot { background: var(--red); }
-
-.feed-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #ccc;
-  flex-shrink: 0;
-}
-
-.feed-name {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.66rem;
-  font-weight: 500;
-  flex: 1;
-}
-
-.feed-n {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.6rem;
-  opacity: 0.6;
-}
+.feed-row.err .feed-dot { background: #aaa; }
+.feed-dot { width: 5px; height: 5px; border-radius: 50%; background: #ddd; flex-shrink: 0; }
+.feed-name { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; flex: 1; color: var(--ink); }
+.feed-n { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; color: var(--muted); }
 
 /* STATS */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.stat-box { background: var(--paper); border: 1px solid var(--border); border-top: 2px solid var(--red); padding: 8px; text-align: center; }
+.stat-n { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.4rem; font-weight: 700; line-height: 1; color: var(--ink); }
+.stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.52rem; color: var(--muted); margin-top: 3px; letter-spacing: 1px; text-transform: uppercase; }
 
-.stat-box {
-  background: var(--paper);
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: center;
-}
-
-.stat-n {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.stat-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.55rem;
-  color: var(--muted);
-  margin-top: 3px;
-  letter-spacing: 1px;
-}
+/* ── SIDEBAR LABELS ── */
+.sidebar-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--red); }
 
 /* ── MAIN CONTENT ── */
-.content {
-  padding: 32px 36px;
-  overflow-y: auto;
-}
+.content { padding: 28px 36px; overflow-y: auto; }
 
 /* SECTION HEADS */
-.sh {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.sh-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.sh-rule {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-  margin-bottom: 2px;
-}
-
-.sh-meta {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.6rem;
-  color: var(--muted);
-  white-space: nowrap;
-}
+.sh { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; padding-top: 10px; border-top: 3px solid var(--red); flex-wrap: wrap; }
+.sh-title { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1rem; font-weight: 700; white-space: nowrap; color: var(--ink); }
+.sh-rule { flex: 1; height: 1px; background: var(--border); margin-bottom: 2px; min-width: 20px; }
+.sh-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--muted); font-style: italic; }
 
 /* ── TOP STORIES ── */
 .stories-section { margin-bottom: 28px; }
-
-.story-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--border);
-}
-
-.story-card {
-  padding: 12px 16px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  transition: background 0.12s;
-}
-
+.story-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-top: none; }
+.story-card { padding: 14px 16px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: background 0.12s; }
 .story-card:hover { background: var(--cream); }
-.story-card.lead { grid-column: 1 / -1; border-right: none; }
-.story-card:nth-child(even):not(.lead) { border-right: none; }
-
-.story-rank {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 1.5px;
-  color: var(--red);
-  margin-bottom: 4px;
-  text-transform: uppercase;
-}
-
-.story-hed {
-  font-family: 'Playfair Display', serif;
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.3;
-  margin-bottom: 6px;
-}
-
-.lead .story-hed { font-size: 1.05rem; }
-
-.story-outlets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 6px;
-}
-
-.outlet-chip {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.52rem;
-  background: var(--ink);
-  color: var(--paper);
-  padding: 1px 5px;
-}
-
-.story-links {
-  margin-top: 6px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.story-link {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.6rem;
-  color: var(--muted);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-
+.story-card:nth-child(even) { border-right: none; }
+.story-card:nth-last-child(1):nth-child(odd) { border-right: none; }
+.story-rank { font-family: 'IBM Plex Mono', monospace; font-size: 0.52rem; letter-spacing: 1.5px; color: var(--red); margin-bottom: 4px; text-transform: uppercase; }
+.story-hed { font-family: 'Libre Baskerville', Georgia, serif; font-size: 0.9rem; font-weight: 700; line-height: 1.35; margin-bottom: 7px; color: var(--ink); }
+.story-outlets { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.outlet-chip { font-family: 'IBM Plex Mono', monospace; font-size: 0.5rem; background: var(--ink); color: #fff; padding: 1px 5px; }
+.story-links { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; }
+.story-link { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; }
 .story-link:hover { color: var(--red); border-bottom-color: var(--red); }
 .story-link::before { content: '↗ '; }
 
 /* EMPTY */
-.empty {
-  padding: 56px 20px;
-  text-align: center;
-  border: 1px dashed #ccc;
-}
+.empty { padding: 48px 20px; text-align: center; border: 1px dashed var(--border); }
+.empty-title { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.2rem; color: var(--muted); margin-bottom: 8px; }
+.empty-sub { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: #bbb; }
 
-.empty-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.3rem;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-.empty-sub {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.65rem;
-  color: #bbb;
-}
-
-.raw-filter-select {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  background: var(--cream);
-  border: 1px solid var(--border);
-  color: var(--ink);
-  padding: 3px 8px;
-  cursor: pointer;
-  outline: none;
-}
-
+.raw-filter-select { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; background: var(--cream); border: 1px solid var(--border); color: var(--ink); padding: 3px 8px; cursor: pointer; outline: none; }
 .raw-filter-select:focus { border-color: var(--red); }
-.raw-table {
-  border: 1px solid var(--border);
-}
-
-.raw-row {
-  display: grid;
-  grid-template-columns: 90px 1fr 90px;
-  gap: 14px;
-  padding: 9px 14px;
-  border-bottom: 1px solid #e5dfd3;
-  align-items: start;
-  transition: background 0.1s;
-}
-
+.raw-table { border: 1px solid var(--border); border-top: none; }
+.raw-row { display: grid; grid-template-columns: 100px 1fr 90px; gap: 12px; padding: 8px 14px; border-bottom: 1px solid #eee; align-items: start; transition: background 0.1s; }
 .raw-row:hover { background: var(--cream); }
 .raw-row:last-child { border-bottom: none; }
-
-.raw-src {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.6rem;
-  color: var(--muted);
-  padding-top: 1px;
-}
-
+.raw-src { font-family: 'IBM Plex Mono', monospace; font-size: 0.56rem; color: var(--muted); padding-top: 1px; }
 .raw-hed { font-size: 0.78rem; line-height: 1.4; }
 .raw-hed a { color: var(--ink); text-decoration: none; }
 .raw-hed a:hover { color: var(--red); }
+.raw-time { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; color: var(--muted); text-align: right; padding-top: 1px; }
 
-.raw-time {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.58rem;
-  color: var(--muted);
-  text-align: right;
-  padding-top: 1px;
-}
-
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--cream); }
-::-webkit-scrollbar-thumb { background: #bbb; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #f0f0f0; }
+::-webkit-scrollbar-thumb { background: var(--red); }
 </style>
 </head>
 <body>
@@ -468,7 +229,14 @@ body {
 <header class="masthead">
   <div class="masthead-inner">
     <div class="masthead-logo">
-      <div class="logo-word">ESPRESSO <em>NEWS</em> TRACKER</div>
+      <div class="logo-word"><em>GLOBAL</em> NEWS TRACKER</div>
+    </div>
+    <div style="padding:12px 24px;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+      <button class="btn btn-primary" id="btn-fetch" onclick="fetchAllFeeds()">
+        <span id="fetch-icon">↺</span> Refresh Feeds
+      </button>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:0.5px;text-align:center;">Click to see latest news stories</div>
+      <div id="last-refreshed" style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:#bbb;letter-spacing:0.5px;">Never refreshed</div>
     </div>
     <div class="masthead-date">
       <div class="date-main" id="hdr-date"></div>
@@ -481,11 +249,13 @@ body {
       </div>
     </div>
     <div class="masthead-actions">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-        <button class="btn btn-primary" id="btn-fetch" onclick="fetchAllFeeds()">
-          <span id="fetch-icon">↺</span> Refresh Feeds
-        </button>
-        <div id="last-refreshed" style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:0.5px;">Never refreshed</div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:4px;">Other Trackers</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="us-news.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">US News</a>
+          <a href="india-news.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">South Asia</a>
+          <a href="sea-news.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">SE Asia</a>
+        </div>
       </div>
     </div>
   </div>
@@ -493,14 +263,6 @@ body {
 
 <div class="layout">
   <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Status</div>
-      <div class="status-pill">
-        <div class="dot" id="status-dot"></div>
-        <span id="status-text">Ready</span>
-      </div>
-    </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">Stats</div>
       <div class="stats-grid">
@@ -516,12 +278,13 @@ body {
       <div class="feed-list" id="feed-list"></div>
       <button class="btn btn-outline" onclick="toggleAll()" style="margin-top:10px;font-size:0.6rem;padding:6px 10px;">Toggle All</button>
     </div>
+
   </aside>
 
   <main class="content">
     <section class="stories-section">
       <div class="sh">
-        <div class="sh-title">Top Stories</div>
+        <div class="sh-title">Top 10 stories today</div>
         <div class="sh-rule"></div>
         <div class="sh-meta" id="stories-meta">Awaiting data</div>
       </div>
@@ -820,8 +583,51 @@ function cluster(items) {
 function score(group) {
   const outlets = new Set(group.map(i => i.source));
   const latestMs = Math.max(...group.map(i => i.date.getTime()));
-  // Weighted: outlet diversity matters most, raw count second, recency a small boost
   return outlets.size * 4 + group.length + (latestMs / 1e12);
+}
+
+// ─────────────────────────────────────
+//  STORY CLASSIFICATION
+// ─────────────────────────────────────
+const CAT_STYLES = {
+  'Geopolitics':    { border: '#8b1a1a', color: '#8b1a1a' },
+  'Economics':      { border: '#1a4a8b', color: '#1a4a8b' },
+  'Local Politics': { border: '#7a5c00', color: '#7a5c00' },
+  'General':        { border: '#6b6458', color: '#6b6458' },
+};
+
+const CAT_GEOPOLITICS_KW = [
+  'bilateral','multilateral','diplomatic','diplomacy','treaty','summit',
+  'sanctions','united nations','nato','alliance','foreign policy',
+  'international','cross-border','trade war','invasion','ceasefire',
+  'war crimes','territorial','extradition','refugee','asylum','nuclear',
+];
+const CAT_ECONOMICS_KW = [
+  'economy','economic','finance','financial','market','markets','stock',
+  'gdp','inflation','recession','currency','trade','export','import',
+  'investment','central bank','fiscal','monetary','tariff','growth',
+  'budget','deficit','surplus','debt','bonds','interest rate','forex',
+  'commodity','oil price','gas','startup','ipo','merger','acquisition',
+];
+const CAT_LOCAL_POLITICS_KW = [
+  'election','vote','voting','parliament','congress','senate',
+  'minister','president','prime minister','government','opposition',
+  'political party','policy','reform','corruption','scandal',
+  'protest','demonstration','crackdown','arrested','detained',
+  'coup','legislation','cabinet','governor','mayor','ruling party',
+];
+
+function classifyStory(group) {
+  const text = group.map(i => i.title.toLowerCase()).join(' ');
+  if (CAT_GEOPOLITICS_KW.some(kw => text.includes(kw))) return 'Geopolitics';
+  if (CAT_ECONOMICS_KW.some(kw => text.includes(kw)))   return 'Economics';
+  if (CAT_LOCAL_POLITICS_KW.some(kw => text.includes(kw))) return 'Local Politics';
+  return 'General';
+}
+
+function catBadge(category) {
+  const s = CAT_STYLES[category] || CAT_STYLES['General'];
+  return `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;border:1px solid ${s.border};color:${s.color};padding:2px 6px;letter-spacing:1px;text-transform:uppercase;">${category}</span>`;
 }
 
 // ─────────────────────────────────────
@@ -846,8 +652,9 @@ function clusterAndRender() {
 }
 
 function renderStories(top) {
+  const outletCount = new Set(allItems.map(i => i.source)).size;
   document.getElementById('stories-meta').textContent =
-    `${top.length} stories · ${allItems.length} headlines analysed`;
+    `${allItems.length} headlines · ${outletCount} outlet${outletCount !== 1 ? 's' : ''}`;
 
   if (!top.length) {
     document.getElementById('story-grid-wrap').innerHTML =
@@ -865,13 +672,15 @@ function renderStories(top) {
       .join('');
 
     const chips = outlets.map(o => `<span class="outlet-chip">${o}</span>`).join('');
+    const cat = classifyStory(group);
 
     return `
-      <div class="story-card ${idx === 0 ? 'lead' : ''}">
+      <div class="story-card">
         <div class="story-rank">
           #${idx + 1} &nbsp;·&nbsp; ${outlets.length} outlet${outlets.length !== 1 ? 's' : ''}
           &nbsp;·&nbsp; ${group.length} headline${group.length !== 1 ? 's' : ''}
         </div>
+        <div style="margin-bottom:5px;">${catBadge(cat)}</div>
         <div class="story-hed">${rep.title}</div>
         <div class="story-outlets">${chips}</div>
         ${links ? `<div class="story-links">${links}</div>` : ''}
@@ -914,12 +723,17 @@ function renderRaw() {
 
   document.getElementById('raw-wrap').innerHTML = `
     <div class="raw-table">
-      ${sorted.map(i => `
+      ${sorted.map(i => {
+        const cat = classifyStory([i]);
+        const cs = CAT_STYLES[cat] || CAT_STYLES['General'];
+        const badge = `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.48rem;border:1px solid ${cs.border};color:${cs.color};padding:1px 4px;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;display:inline-block;">${cat}</span>`;
+        return `
         <div class="raw-row">
           <div class="raw-src">${i.source}</div>
-          <div class="raw-hed"><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></div>
+          <div class="raw-hed">${badge}<br><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></div>
           <div class="raw-time">${ago(i.date)}</div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
 }
 

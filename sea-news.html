@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>South-East Asia News Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #E3120B;       /* Economist signature red */
+  --ink: #121212;
+  --paper: #FFFFFF;
+  --cream: #F7F7F7;
+  --muted: #777777;
+  --border: #CCCCCC;
+  --border-dark: #333333;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Lato', Arial, sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  border-top: 5px solid var(--red);
+  border-bottom: 1px solid var(--border-dark);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.masthead-inner {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.masthead-logo {
+  padding: 12px 28px 10px;
+  border-right: 1px solid var(--border);
+}
+
+.logo-word {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+}
+
+.logo-word em { font-style: normal; color: var(--red); }
+
+.masthead-date {
+  flex: 1;
+  padding: 10px 24px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.date-main {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.clocks {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.clock-item {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+}
+
+.clock-city {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.52rem;
+  color: var(--muted);
+  margin-right: 3px;
+}
+
+.clock-time {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.clock-sep {
+  color: #ccc;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+}
+
+.masthead-actions {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: calc(100vh - 90px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  position: sticky;
+  top: 90px;
+  height: calc(100vh - 90px);
+  overflow-y: auto;
+  background: var(--cream);
+}
+
+.sidebar-section { margin-bottom: 24px; }
+
+.sidebar-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--red);
+}
+
+.country-group { margin-bottom: 10px; }
+
+.country-group-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.53rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-left: 2px solid var(--red);
+  padding: 2px 0 2px 6px;
+  margin-bottom: 3px;
+}
+
+/* BUTTONS */
+.btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--red);
+  color: #fff;
+  width: auto;
+  justify-content: center;
+}
+
+.btn-primary:hover:not(:disabled) { background: #c00f08; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-dark);
+  color: var(--ink);
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-outline:hover { background: var(--ink); color: var(--paper); }
+
+/* STATUS */
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+  min-height: 18px;
+}
+
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #ccc;
+  flex-shrink: 0;
+}
+
+.dot.green { background: #27ae60; animation: pulse 1.5s infinite; }
+.dot.red { background: var(--red); }
+.dot.amber { background: #e67e22; animation: pulse 1s infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* FEED TOGGLES */
+.feed-list { display: flex; flex-direction: column; gap: 1px; }
+
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.12s;
+  user-select: none;
+}
+
+.feed-row:hover { border-left-color: var(--border); background: var(--paper); }
+.feed-row.on { border-left-color: var(--red); background: var(--paper); color: var(--ink); }
+.feed-row.on .feed-dot { background: var(--red); }
+.feed-row.loading .feed-dot { background: #e67e22; animation: pulse 0.8s infinite; }
+.feed-row.err .feed-dot { background: #aaa; }
+
+.feed-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #ddd;
+  flex-shrink: 0;
+}
+
+.feed-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 400;
+  flex: 1;
+  color: var(--ink);
+}
+
+.feed-n {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+}
+
+/* STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.stat-box {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--red);
+  padding: 8px;
+  text-align: center;
+}
+
+.stat-n {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.stat-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.52rem;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── MAIN CONTENT ── */
+.content {
+  padding: 28px 36px;
+  overflow-y: auto;
+}
+
+/* SECTION HEADS */
+.sh {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding-top: 10px;
+  border-top: 3px solid var(--red);
+  flex-wrap: wrap;
+}
+
+.sh-title {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.sh-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 2px;
+  min-width: 20px;
+}
+
+.sh-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  font-style: italic;
+  white-space: normal;
+  max-width: 380px;
+  text-align: right;
+}
+
+/* ── WEEKLY DIGEST ── */
+.digest-section { margin-bottom: 32px; }
+
+.digest-box {
+  border: 1px solid var(--border);
+  background: var(--paper);
+  padding: 0;
+}
+
+.digest-story {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  margin-left: 0;
+  transition: background 0.1s;
+}
+
+.digest-story:hover { background: var(--cream); }
+
+.digest-story:last-child { border-bottom: none; }
+
+.digest-story-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.digest-story-hed {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+.digest-story-body {
+  font-family: 'Lato', Arial, sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #333;
+  max-width: 72ch;
+}
+
+.digest-story-meta {
+  margin-top: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.56rem;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.digest-outlet-chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.5rem;
+  background: var(--ink);
+  color: #fff;
+  padding: 1px 5px;
+}
+
+.digest-empty {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+}
+
+/* ── TOP STORIES ── */
+.stories-section { margin-bottom: 28px; }
+
+.story-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--border);
+  border-top: none;
+}
+
+.story-card {
+  padding: 14px 16px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+
+.story-card:hover { background: var(--cream); }
+.story-card:nth-child(even) { border-right: none; }
+.story-card:nth-last-child(1):nth-child(odd) { border-right: none; }
+
+.story-rank {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 1.5px;
+  color: var(--red);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.story-hed {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 7px;
+  color: var(--ink);
+}
+
+.story-outlets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.outlet-chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.5rem;
+  background: var(--ink);
+  color: #fff;
+  padding: 1px 5px;
+}
+
+.story-links {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.story-link {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.story-link:hover { color: var(--red); border-bottom-color: var(--red); }
+.story-link::before { content: '↗ '; }
+
+/* EMPTY */
+.empty {
+  padding: 48px 20px;
+  text-align: center;
+  border: 1px dashed var(--border);
+}
+
+.empty-title {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 1.2rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.empty-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  color: #bbb;
+}
+
+.raw-filter-select {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+}
+
+.raw-filter-select:focus { border-color: var(--red); }
+
+.raw-table { border: 1px solid var(--border); border-top: none; }
+
+.raw-row {
+  display: grid;
+  grid-template-columns: 80px 80px 1fr 90px;
+  gap: 12px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #eee;
+  align-items: start;
+  transition: background 0.1s;
+}
+
+.raw-row:hover { background: var(--cream); }
+.raw-row:last-child { border-bottom: none; }
+
+.raw-country {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.56rem;
+  color: var(--red);
+  padding-top: 1px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.raw-src {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.56rem;
+  color: var(--muted);
+  padding-top: 1px;
+}
+
+.raw-hed { font-size: 0.78rem; line-height: 1.4; }
+.raw-hed a { color: var(--ink); text-decoration: none; }
+.raw-hed a:hover { color: var(--red); }
+
+.raw-time {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+  text-align: right;
+  padding-top: 1px;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #f0f0f0; }
+::-webkit-scrollbar-thumb { background: var(--red); }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-logo">
+      <div class="logo-word"><em>SOUTH-EAST ASIA</em> NEWS TRACKER</div>
+    </div>
+    <div style="padding:12px 24px;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+      <button class="btn btn-primary" id="btn-fetch" onclick="fetchAllFeeds()">
+        <span id="fetch-icon">↺</span> Refresh Feeds
+      </button>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:0.5px;text-align:center;">Click to see latest news stories</div>
+      <div id="last-refreshed" style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:#bbb;letter-spacing:0.5px;">Never refreshed</div>
+    </div>
+    <div class="masthead-date">
+      <div class="date-main" id="hdr-date"></div>
+      <div class="clocks">
+        <span class="clock-item"><span class="clock-city">London</span> <span class="clock-time" id="clock-lon"></span></span>
+        <span class="clock-sep">·</span>
+        <span class="clock-item"><span class="clock-city">Singapore</span> <span class="clock-time" id="clock-sin"></span></span>
+        <span class="clock-sep">·</span>
+        <span class="clock-item"><span class="clock-city">Bangkok</span> <span class="clock-time" id="clock-bkk"></span></span>
+        <span class="clock-sep">·</span>
+        <span class="clock-item"><span class="clock-city">Manila</span> <span class="clock-time" id="clock-mnl"></span></span>
+      </div>
+    </div>
+    <div class="masthead-actions">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:4px;">Other Trackers</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="index_1.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">Global</a>
+          <a href="us-news.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">US News</a>
+          <a href="india-news.html" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">South Asia</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Stats</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-n" id="stat-items">0</div><div class="stat-label">Headlines</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-feeds">0</div><div class="stat-label">Feeds</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-clusters">—</div><div class="stat-label">Clusters</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-top">—</div><div class="stat-label">Top Stories</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Feeds</div>
+      <div class="feed-list" id="feed-list"></div>
+      <button class="btn btn-outline" onclick="toggleAll()" style="margin-top:10px;font-size:0.6rem;padding:6px 10px;">Toggle All</button>
+    </div>
+
+  </aside>
+
+  <main class="content">
+
+    <!-- ── WEEKLY DIGEST ── -->
+    <section class="digest-section">
+      <div class="sh">
+        <div class="sh-title">The week's big stories</div>
+        <div class="sh-rule"></div>
+        <div class="sh-meta" id="digest-meta">Top five stories over the past seven days identified based on importance and coverage</div>
+      </div>
+      <div id="digest-wrap">
+        <div class="digest-box">
+          <div class="digest-empty">Fetch feeds to generate the weekly digest</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TOP STORIES ── -->
+    <section class="stories-section">
+      <div class="sh">
+        <div class="sh-title">Top 10 stories today</div>
+        <div class="sh-rule"></div>
+        <div class="sh-meta" id="stories-meta">Awaiting data</div>
+      </div>
+      <div id="story-grid-wrap">
+        <div class="empty">
+          <div class="empty-title">No stories yet</div>
+          <div class="empty-sub">Fetch feeds to identify today's top stories</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── RAW FEED ── -->
+    <section>
+      <div class="sh">
+        <div class="sh-title">Raw Feed</div>
+        <div class="sh-rule"></div>
+        <select id="raw-country-filter" class="raw-filter-select" onchange="onCountryChange()">
+          <option value="all">All countries</option>
+        </select>
+        <select id="raw-source-filter" class="raw-filter-select" onchange="renderRaw()" style="margin-left:4px;">
+          <option value="all">All sources</option>
+        </select>
+        <select id="raw-cat-filter" class="raw-filter-select" onchange="renderRaw()" style="margin-left:4px;">
+          <option value="all">All categories</option>
+          <option value="Geopolitics">Geopolitics</option>
+          <option value="Economics">Economics</option>
+          <option value="Local Politics">Local Politics</option>
+          <option value="General">General</option>
+        </select>
+        <div class="sh-meta" id="raw-meta">0 items</div>
+      </div>
+      <div id="raw-wrap">
+        <div class="empty">
+          <div class="empty-title">No feed data</div>
+          <div class="empty-sub">Incoming headlines will appear here</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+// ─────────────────────────────────────
+//  FEEDS — SOUTH-EAST ASIA TRACKER
+// ─────────────────────────────────────
+const FEEDS = [
+  // ── SINGAPORE ──
+  { id:'cna',       name:'Channel NewsAsia', country:'Singapore',   url:'https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=10416' },
+  { id:'straitstm', name:'Straits Times',    country:'Singapore',   url:'https://www.straitstimes.com/news/singapore/rss.xml' },
+  { id:'todaysg',   name:'Today Online',     country:'Singapore',   url:'https://news.google.com/rss/search?q=todayonline+singapore+news&ceid=SG:en&hl=en-SG&gl=SG' },
+
+  // ── MALAYSIA ──
+  { id:'thestar',   name:'The Star',         country:'Malaysia',    url:'https://news.google.com/rss/search?q=the+star+malaysia+news&ceid=MY:en&hl=en-MY&gl=MY' },
+  { id:'malaymail', name:'Malay Mail',        country:'Malaysia',    url:'https://news.google.com/rss/search?q=malay+mail+malaysia+news&ceid=MY:en&hl=en-MY&gl=MY' },
+  { id:'fmt',       name:'Free Malaysia Today', country:'Malaysia', url:'https://www.freemalaysiatoday.com/feed/' },
+
+  // ── INDONESIA ──
+  { id:'jakpost',   name:'Jakarta Post',     country:'Indonesia',   url:'https://news.google.com/rss/search?q=jakarta+post+indonesia+news&ceid=ID:en&hl=en-ID&gl=ID' },
+  { id:'antara',    name:'Antara News',      country:'Indonesia',   url:'https://en.antaranews.com/rss/news' },
+  { id:'tempoid',   name:'Tempo',            country:'Indonesia',   url:'https://news.google.com/rss/search?q=tempo+english+indonesia+news&ceid=ID:en&hl=en-ID&gl=ID' },
+
+  // ── PHILIPPINES ──
+  { id:'rappler',   name:'Rappler',          country:'Philippines', url:'https://www.rappler.com/feed/' },
+  { id:'inquirer',  name:'Inquirer',         country:'Philippines', url:'https://newsinfo.inquirer.net/feed/' },
+  { id:'manilabul', name:'Manila Bulletin',  country:'Philippines', url:'https://news.google.com/rss/search?q=manila+bulletin+philippines+news&ceid=PH:en&hl=en-PH&gl=PH' },
+
+  // ── THAILAND ──
+  { id:'bkpost',    name:'Bangkok Post',     country:'Thailand',    url:'https://www.bangkokpost.com/rss/data/most-recent.xml' },
+  { id:'thaipbs',   name:'Thai PBS World',   country:'Thailand',    url:'https://news.thaipbs.or.th/rss/world.xml' },
+  { id:'nationth',  name:'The Nation TH',   country:'Thailand',    url:'https://news.google.com/rss/search?q=nation+thailand+news&ceid=TH:en&hl=en-TH&gl=TH' },
+
+  // ── VIETNAM ──
+  { id:'vnexpress', name:'VnExpress Intl',  country:'Vietnam',     url:'https://e.vnexpress.net/rss/news.rss' },
+  { id:'vietnamnws',name:'Vietnam News',    country:'Vietnam',     url:'https://vietnamnews.vn/rss' },
+  { id:'tuoitre',   name:'Tuoi Tre News',   country:'Vietnam',     url:'https://tuoitrenews.vn/rss' },
+
+  // ── MYANMAR ──
+  { id:'irrawaddy', name:'The Irrawaddy',   country:'Myanmar',     url:'https://news.google.com/rss/search?q=irrawaddy+myanmar+news&ceid=US:en&hl=en-US&gl=US' },
+  { id:'mmnow',     name:'Myanmar Now',     country:'Myanmar',     url:'https://myanmar-now.org/en/feed' },
+  { id:'mizzima',   name:'Mizzima',         country:'Myanmar',     url:'https://news.google.com/rss/search?q=mizzima+myanmar+news&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── CAMBODIA ──
+  { id:'khmertms',  name:'Khmer Times',     country:'Cambodia',    url:'https://news.google.com/rss/search?q=khmer+times+cambodia&ceid=KH:en&hl=en-KH&gl=KH' },
+  { id:'pnhpost',   name:'Phnom Penh Post', country:'Cambodia',    url:'https://news.google.com/rss/search?q=phnom+penh+post+cambodia&ceid=KH:en&hl=en-KH&gl=KH' },
+  { id:'cambodia_g',name:'Cambodia Daily',  country:'Cambodia',    url:'https://news.google.com/rss/search?q=cambodia+news+today&ceid=KH:en&hl=en-KH&gl=KH' },
+
+  // ── LAOS ──
+  { id:'vientiane', name:'Vientiane Times', country:'Laos',        url:'https://news.google.com/rss/search?q=vientiane+times+laos&ceid=US:en&hl=en-US&gl=US' },
+  { id:'kpl',       name:'KPL News',        country:'Laos',        url:'https://news.google.com/rss/search?q=kpl+laos+news&ceid=US:en&hl=en-US&gl=US' },
+  { id:'laos_g',    name:'Laos News',       country:'Laos',        url:'https://news.google.com/rss/search?q=laos+latest+news&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── BRUNEI ──
+  { id:'borneob',   name:'Borneo Bulletin', country:'Brunei',      url:'https://news.google.com/rss/search?q=borneo+bulletin+brunei&ceid=BN:en&hl=en-BN&gl=BN' },
+  { id:'brunei_g',  name:'Brunei News',     country:'Brunei',      url:'https://news.google.com/rss/search?q=brunei+darussalam+news&ceid=BN:en&hl=en-BN&gl=BN' },
+  { id:'brunei_g2', name:'Brunei Times',    country:'Brunei',      url:'https://news.google.com/rss/search?q=brunei+latest+news+today&ceid=US:en&hl=en-US&gl=US' },
+
+  // ── TIMOR-LESTE ──
+  { id:'tl_g1',     name:'Timor-Leste News',country:'Timor-Leste', url:'https://news.google.com/rss/search?q=timor+leste+news&ceid=US:en&hl=en-US&gl=US' },
+  { id:'tl_g2',     name:'East Timor News', country:'Timor-Leste', url:'https://news.google.com/rss/search?q=east+timor+dili+news&ceid=US:en&hl=en-US&gl=US' },
+  { id:'tl_g3',     name:'Tatoli Timor',    country:'Timor-Leste', url:'https://news.google.com/rss/search?q=tatoli+timor+leste&ceid=US:en&hl=en-US&gl=US' },
+];
+
+const COUNTRIES = [...new Set(FEEDS.map(f => f.country))];
+
+const PROXIES = [
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+];
+
+const STOPWORDS = new Set([
+  'the','a','an','and','or','but','in','on','at','to','for','of','with','by',
+  'from','as','is','was','are','were','be','been','have','has','had','will',
+  'would','could','should','that','this','these','those','it','its','he',
+  'she','they','we','you','who','what','where','when','why','how','after',
+  'before','over','under','into','out','up','down','no','so','if','than',
+  'then','about','also','just','new','says','say','said','amid','despite',
+  'reports','according','two','three','four','five','six','one','more',
+  'while','during','following','within','not','amid','their','his','her',
+]);
+
+let enabledFeeds = new Set(FEEDS.map(f => f.id));
+let allItems = [];
+let feedCounts = {};
+
+// ─────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderFeedList();
+  buildCountryFilter();
+  tick();
+  setInterval(tick, 1000);
+});
+
+function tick() {
+  const now = new Date();
+  document.getElementById('hdr-date').textContent =
+    now.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  const fmt = tz => new Date().toLocaleTimeString('en-GB', { timeZone: tz, hour:'2-digit', minute:'2-digit' });
+  document.getElementById('clock-lon').textContent = fmt('Europe/London');
+  document.getElementById('clock-sin').textContent = fmt('Asia/Singapore');
+  document.getElementById('clock-bkk').textContent = fmt('Asia/Bangkok');
+  document.getElementById('clock-mnl').textContent = fmt('Asia/Manila');
+}
+
+// ─────────────────────────────────────
+//  FEED LIST (grouped by country)
+// ─────────────────────────────────────
+function renderFeedList() {
+  const grouped = {};
+  FEEDS.forEach(f => {
+    if (!grouped[f.country]) grouped[f.country] = [];
+    grouped[f.country].push(f);
+  });
+
+  document.getElementById('feed-list').innerHTML = Object.entries(grouped).map(([country, feeds]) => `
+    <div class="country-group">
+      <div class="country-group-label">${country}</div>
+      ${feeds.map(f => `
+        <div class="feed-row ${enabledFeeds.has(f.id) ? 'on' : ''}" id="fr-${f.id}" onclick="toggleFeed('${f.id}')">
+          <div class="feed-dot" id="fd-${f.id}"></div>
+          <div class="feed-name">${f.name}</div>
+          <div class="feed-n" id="fn-${f.id}">${feedCounts[f.id] ?? '—'}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function toggleFeed(id) {
+  enabledFeeds.has(id) ? enabledFeeds.delete(id) : enabledFeeds.add(id);
+  renderFeedList();
+  restoreCounts();
+}
+
+function toggleAll() {
+  enabledFeeds = enabledFeeds.size === FEEDS.length
+    ? new Set()
+    : new Set(FEEDS.map(f => f.id));
+  renderFeedList();
+  restoreCounts();
+}
+
+function restoreCounts() {
+  Object.entries(feedCounts).forEach(([id, n]) => {
+    const el = document.getElementById(`fn-${id}`);
+    if (el) el.textContent = n;
+  });
+}
+
+// ─────────────────────────────────────
+//  FETCH
+// ─────────────────────────────────────
+async function fetchAllFeeds() {
+  const btn = document.getElementById('btn-fetch');
+  btn.disabled = true;
+  document.getElementById('fetch-icon').textContent = '⟳';
+
+  allItems = [];
+  feedCounts = {};
+  rawShowAll = false;
+  const catSel = document.getElementById('raw-cat-filter');
+  if (catSel) catSel.value = 'all';
+
+  const active = FEEDS.filter(f => enabledFeeds.has(f.id));
+  document.getElementById('stat-feeds').textContent = active.length;
+  setStatus('amber', `Fetching ${active.length} feeds…`);
+
+  active.forEach(f => setFeedState(f.id, 'loading'));
+
+  let done = 0;
+  await Promise.all(active.map(async feed => {
+    try {
+      const items = await fetchFeed(feed);
+      feedCounts[feed.id] = items.length;
+      allItems.push(...items);
+      setFeedState(feed.id, 'on', items.length);
+      done++;
+      document.getElementById('stat-items').textContent = allItems.length;
+      setStatus('amber', `Loaded ${done}/${active.length} — ${allItems.length} items`);
+      renderRaw();
+    } catch(e) {
+      setFeedState(feed.id, 'err', 'ERR');
+      console.warn(feed.name, e.message);
+    }
+  }));
+
+  btn.disabled = false;
+  document.getElementById('fetch-icon').textContent = '↺';
+
+  const now = new Date();
+  document.getElementById('last-refreshed').textContent =
+    'Last refreshed ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+  if (allItems.length > 0) {
+    setStatus('green', `✓ ${allItems.length} headlines from ${done} feeds — clustering…`);
+    clusterAndRender();
+  } else {
+    setStatus('red', 'No items loaded — try refreshing or check your connection');
+  }
+}
+
+async function fetchFeed(feed) {
+  let lastError;
+  for (const proxyFn of PROXIES) {
+    try {
+      const r = await fetch(proxyFn(feed.url), { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const text = await r.text();
+      let xml;
+      try {
+        const json = JSON.parse(text);
+        xml = json.contents ?? json;
+      } catch {
+        xml = text;
+      }
+      if (!xml || xml.length < 50) throw new Error('Empty response');
+      const items = parseFeed(xml, feed);
+      if (items.length === 0) throw new Error('No items parsed');
+      return items;
+    } catch(e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
+}
+
+function parseFeed(xml, feed) {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const out = [];
+
+  const push = (title, link, date, desc) => {
+    if (!title || title.length < 6) return;
+    out.push({
+      title: clean(title),
+      link: link || '',
+      date: date ? new Date(date) : new Date(),
+      source: feed.name,
+      sourceId: feed.id,
+      country: feed.country,
+      desc: desc ? clean(desc).slice(0, 400) : '',
+    });
+  };
+
+  doc.querySelectorAll('item').forEach(el =>
+    push(
+      el.querySelector('title')?.textContent,
+      el.querySelector('link')?.textContent?.trim() || el.querySelector('link')?.getAttribute('href'),
+      el.querySelector('pubDate')?.textContent,
+      el.querySelector('description')?.textContent
+    )
+  );
+
+  if (!out.length) {
+    doc.querySelectorAll('entry').forEach(el =>
+      push(
+        el.querySelector('title')?.textContent,
+        el.querySelector('link')?.getAttribute('href'),
+        el.querySelector('updated')?.textContent,
+        el.querySelector('summary')?.textContent || el.querySelector('content')?.textContent
+      )
+    );
+  }
+
+  return out.slice(0, 50);
+}
+
+function clean(t) {
+  return t.replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')
+    .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+
+// ─────────────────────────────────────
+//  KEYWORD SIMILARITY
+// ─────────────────────────────────────
+function getKeywords(title) {
+  const words = title.toLowerCase().replace(/[^a-z0-9'\-]/g, ' ').split(/\s+/);
+  const kw = new Set();
+  words.forEach((w, i) => {
+    if (w.length >= 3 && !STOPWORDS.has(w)) kw.add(w);
+    if (i < 8 && words[i+1] && words[i+1].length >= 3 && !STOPWORDS.has(words[i+1])) {
+      kw.add(`${w}_${words[i+1]}`);
+    }
+  });
+  return kw;
+}
+
+function similarity(titleA, titleB) {
+  const a = getKeywords(titleA);
+  const b = getKeywords(titleB);
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  a.forEach(w => { if (b.has(w)) inter++; });
+  return inter / Math.sqrt(a.size * b.size);
+}
+
+// ─────────────────────────────────────
+//  GREEDY CLUSTERING
+// ─────────────────────────────────────
+const SIM_THRESHOLD = 0.20;
+
+function cluster(items) {
+  const sorted = [...items].sort((a, b) => b.date - a.date);
+  const used = new Uint8Array(sorted.length);
+  const clusters = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (used[i]) continue;
+    const group = [sorted[i]];
+    used[i] = 1;
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (used[j]) continue;
+      if (similarity(sorted[i].title, sorted[j].title) >= SIM_THRESHOLD) {
+        group.push(sorted[j]);
+        used[j] = 1;
+      }
+    }
+    clusters.push(group);
+  }
+  return clusters;
+}
+
+function score(group) {
+  const outlets = new Set(group.map(i => i.source));
+  const latestMs = Math.max(...group.map(i => i.date.getTime()));
+  return outlets.size * 4 + group.length + (latestMs / 1e12);
+}
+
+// ─────────────────────────────────────
+//  CLUSTER → RENDER
+// ─────────────────────────────────────
+function clusterAndRender() {
+  setTimeout(() => {
+    const clusters = cluster(allItems);
+    clusters.sort((a, b) => score(b) - score(a));
+
+    const top = clusters
+      .filter(g => new Set(g.map(i => i.source)).size >= 2 || clusters.indexOf(g) < 10)
+      .slice(0, 10);
+
+    document.getElementById('stat-clusters').textContent = clusters.length;
+    document.getElementById('stat-top').textContent = top.length;
+
+    renderStories(top);
+    renderDigest(clusters);
+    setStatus('green', `✓ ${clusters.length} clusters · top ${top.length} stories identified`);
+  }, 60);
+}
+
+function renderStories(top) {
+  const outletCount = new Set(allItems.map(i => i.source)).size;
+  document.getElementById('stories-meta').textContent =
+    `${allItems.length} headlines · ${outletCount} outlet${outletCount !== 1 ? 's' : ''}`;
+
+  if (!top.length) {
+    document.getElementById('story-grid-wrap').innerHTML =
+      '<div class="empty"><div class="empty-title">No clusters found</div><div class="empty-sub">Try enabling more feeds</div></div>';
+    return;
+  }
+
+  const cards = top.map((group, idx) => {
+    const outlets = [...new Set(group.map(i => i.source))];
+    const rep = group[0];
+
+    const links = [...new Map(group.filter(i => i.link).map(i => [i.source, i])).values()]
+      .slice(0, 5)
+      .map(i => `<a class="story-link" href="${i.link}" target="_blank" rel="noopener">${i.source}</a>`)
+      .join('');
+
+    const chips = outlets.map(o => `<span class="outlet-chip">${o}</span>`).join('');
+
+    const cat = classifyStory(group);
+    return `
+      <div class="story-card">
+        <div class="story-rank">
+          #${idx + 1} &nbsp;·&nbsp; ${outlets.length} outlet${outlets.length !== 1 ? 's' : ''}
+          &nbsp;·&nbsp; ${group.length} headline${group.length !== 1 ? 's' : ''}
+        </div>
+        <div style="margin-bottom:5px;">${catBadge(cat)}</div>
+        <div class="story-hed">${rep.title}</div>
+        <div class="story-outlets">${chips}</div>
+        ${links ? `<div class="story-links">${links}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('story-grid-wrap').innerHTML = `<div class="story-grid">${cards}</div>`;
+}
+
+// ─────────────────────────────────────
+//  STORY CLASSIFICATION
+// ─────────────────────────────────────
+
+// A story is Geopolitics if two or more SEA countries are mentioned in its
+// headlines, OR if it contains clear cross-border / international keywords.
+// Economics covers finance, markets and trade. Local Politics covers domestic
+// governance. Anything else falls through to General.
+const CAT_STYLES = {
+  'Geopolitics':    { border: '#8b1a1a', color: '#8b1a1a' },
+  'Economics':      { border: '#1a4a8b', color: '#1a4a8b' },
+  'Local Politics': { border: '#7a5c00', color: '#7a5c00' },
+  'General':        { border: '#6b6458', color: '#6b6458' },
+};
+
+const CAT_GEOPOLITICS_KW = [
+  'bilateral','multilateral','diplomatic','diplomacy','treaty','summit',
+  'sanctions','united nations','asean','alliance','foreign policy',
+  'international','cross-border','trade war','invasion','ceasefire',
+  'war crimes','territorial','extradition','refugee','asylum',
+];
+const CAT_ECONOMICS_KW = [
+  'economy','economic','finance','financial','market','markets','stock',
+  'gdp','inflation','recession','currency','trade','export','import',
+  'investment','central bank','fiscal','monetary','tariff','growth',
+  'budget','deficit','surplus','debt','bonds','interest rate','forex',
+  'commodity','oil price','gas','startup','ipo','merger','acquisition',
+];
+const CAT_LOCAL_POLITICS_KW = [
+  'election','vote','voting','parliament','congress','senate',
+  'minister','president','prime minister','government','opposition',
+  'political party','policy','reform','corruption','scandal',
+  'protest','demonstration','crackdown','arrested','detained',
+  'coup','legislation','cabinet','governor','mayor','ruling party',
+];
+
+function classifyStory(group) {
+  const text = group.map(i => i.title.toLowerCase()).join(' ');
+
+  // Geopolitics: 2+ country name hits OR explicit cross-border keywords
+  const countriesFound = Object.entries(COUNTRY_DETECT)
+    .filter(([, kws]) => kws.some(kw => text.includes(kw)));
+  if (countriesFound.length >= 2 || CAT_GEOPOLITICS_KW.some(kw => text.includes(kw))) {
+    return 'Geopolitics';
+  }
+  if (CAT_ECONOMICS_KW.some(kw => text.includes(kw)))      return 'Economics';
+  if (CAT_LOCAL_POLITICS_KW.some(kw => text.includes(kw))) return 'Local Politics';
+  return 'General';
+}
+
+function catBadge(category) {
+  const s = CAT_STYLES[category] || CAT_STYLES['General'];
+  return `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;border:1px solid ${s.border};color:${s.color};padding:2px 6px;letter-spacing:1px;text-transform:uppercase;">${category}</span>`;
+}
+
+// ─────────────────────────────────────
+//  IMPORTANCE SCORING FOR DIGEST
+// ─────────────────────────────────────
+
+// Population-weighted geopolitical importance (1–10 scale).
+// Indonesia leads on population (280M); Singapore punches above its weight
+// as the region's financial hub; Timor-Leste and Brunei score lowest.
+const COUNTRY_WEIGHT = {
+  'Indonesia':    10,   // 280M — largest economy & population in SEA
+  'Philippines':   8,   // 115M
+  'Vietnam':       7,   //  98M
+  'Thailand':      6,   //  72M
+  'Myanmar':       5,   //  55M — ongoing civil conflict amplifies significance
+  'Malaysia':      5,   //  34M
+  'Singapore':     5,   //   6M — global financial hub, outsized diplomatic role
+  'Cambodia':      2,   //  17M
+  'Laos':          1.5, //   7M
+  'Brunei':        0.5, //   0.5M
+  'Timor-Leste':   0.5, //   1.3M
+};
+
+// Topic severity tiers — matched against all headline text in a cluster.
+// Returns the highest tier found (tiers are checked in order, high→low).
+const TOPIC_TIERS = [
+  {
+    // Tier 3 — Crisis / catastrophe / major political rupture
+    mult: 3.5,
+    words: [
+      'war','conflict','coup','overthrow','assassin','nuclear','airstrike','bombing',
+      'massacre','genocide','civil war','insurgency','earthquake','tsunami','typhoon',
+      'cyclone','flood','disaster','famine','pandemic','epidemic','outbreak',
+      'martial law','state of emergency','ceasefire','invasion','offensive',
+      'dead','killed','deaths','casualties',
+    ],
+  },
+  {
+    // Tier 2 — Elections, diplomacy, economic shocks, major crime
+    mult: 2.2,
+    words: [
+      'election','vote','voting','referendum','protest','demonstration',
+      'sanction','diplomatic','summit','treaty','crisis','arrested','detained',
+      'sentenced','corruption','scandal','impeach','resign','resign',
+      'recession','gdp','inflation','default','debt','trade war',
+      'strike','riot','clashes','crackdown',
+    ],
+  },
+  {
+    // Tier 1 — Policy, governance, economics (routine but substantive)
+    mult: 1.5,
+    words: [
+      'parliament','congress','senate','minister','president','prime minister',
+      'budget','policy','reform','investment','bilateral','agreement','deal',
+      'tariff','growth','central bank','interest rate',
+    ],
+  },
+];
+
+// Detect which SEA country a cluster is primarily about by scanning all
+// headline text for country/city name keywords. Falls back to the source
+// country of the plurality of items if no match found.
+const COUNTRY_DETECT = {
+  'Indonesia':    ['indonesia','jakarta','surabaya','bandung','indonesian','jokowi','prabowo','bali','java','sumatra'],
+  'Philippines':  ['philippines','manila','philippine','marcos','duterte','mindanao','luzon','visayas','cebu'],
+  'Vietnam':      ['vietnam','hanoi','ho chi minh','saigon','vietnamese'],
+  'Thailand':     ['thailand','bangkok','thai','chiang mai','phuket','pattaya'],
+  'Myanmar':      ['myanmar','burma','yangon','rangoon','mandalay','burmese','rohingya','junta','shan','karen'],
+  'Malaysia':     ['malaysia','kuala lumpur','malay','malaysian','anwar','sabah','sarawak','penang'],
+  'Cambodia':     ['cambodia','phnom penh','khmer','cambodian','hun sen','hun manet','siem reap'],
+  'Singapore':    ['singapore','singaporean'],
+  'Laos':         ['laos','laotian','vientiane','lao pdr'],
+  'Brunei':       ['brunei','bandar seri begawan'],
+  'Timor-Leste':  ['timor','timorese','dili','east timor'],
+};
+
+function detectCountry(group) {
+  // Count keyword hits per country across all titles + descs
+  const text = group.map(i => (i.title + ' ' + (i.desc || '')).toLowerCase()).join(' ');
+  let best = null, bestHits = 0;
+  for (const [country, kws] of Object.entries(COUNTRY_DETECT)) {
+    const hits = kws.reduce((n, kw) => {
+      let idx = 0, count = 0;
+      while ((idx = text.indexOf(kw, idx)) !== -1) { count++; idx += kw.length; }
+      return n + count;
+    }, 0);
+    if (hits > bestHits) { bestHits = hits; best = country; }
+  }
+  if (best) return best;
+  // Fallback: plurality source country
+  const counts = {};
+  group.forEach(i => { counts[i.country] = (counts[i.country] || 0) + 1; });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Singapore';
+}
+
+function topicMultiplier(group) {
+  const text = group.map(i => i.title.toLowerCase()).join(' ');
+  for (const tier of TOPIC_TIERS) {
+    if (tier.words.some(w => text.includes(w))) return tier.mult;
+  }
+  return 1.0;
+}
+
+function digestImportanceScore(group) {
+  const outlets = new Set(group.map(i => i.source));
+  const latestMs = Math.max(...group.map(i => i.date.getTime()));
+  const baseScore = outlets.size * 4 + group.length;
+  const country   = detectCountry(group);
+  const cWeight   = COUNTRY_WEIGHT[country] ?? 1;
+  const tMult     = topicMultiplier(group);
+  // Combine: base coverage × country weight × topic severity, with small recency tiebreaker
+  return baseScore * cWeight * tMult + (latestMs / 1e12);
+}
+
+// ─────────────────────────────────────
+//  WEEKLY DIGEST
+// ─────────────────────────────────────
+function renderDigest(allClusters) {
+  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentItems = allItems.filter(i => i.date.getTime() >= oneWeekAgo);
+
+  const scoredClusters = allClusters.map(group => {
+    const recentGroup = group.filter(i => i.date.getTime() >= oneWeekAgo);
+    const g = recentGroup.length ? recentGroup : group;
+    return { group, recentScore: digestImportanceScore(g) };
+  });
+
+  scoredClusters.sort((a, b) => b.recentScore - a.recentScore);
+
+  const top3 = scoredClusters
+    .filter(c => new Set(c.group.map(i => i.source)).size >= 3)
+    .slice(0, 5);
+
+  if (!top3.length) {
+    document.getElementById('digest-wrap').innerHTML =
+      '<div class="digest-box"><div class="digest-empty">Not enough data for digest — need stories covered by at least 3 outlets</div></div>';
+    return;
+  }
+
+  const ordinals = ['First Story', 'Second Story', 'Third Story', 'Fourth Story', 'Fifth Story'];
+
+  const stories = top3.map(({ group }, idx) => {
+    const outlets = [...new Set(group.map(i => i.source))];
+    const rep = group[0];
+    const para = buildSummaryParagraph(group);
+    const chips = outlets.slice(0, 6).map(o => `<span class="digest-outlet-chip">${o}</span>`).join(' ');
+    const latestDate = new Date(Math.max(...group.map(i => i.date.getTime())));
+    const dateStr = latestDate.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    const country = detectCountry(group);
+    const tMult = topicMultiplier(group);
+    const cWeight = COUNTRY_WEIGHT[country] ?? 1;
+    const cat = classifyStory(group);
+
+    return `
+      <div class="digest-story">
+        <div class="digest-story-num">${ordinals[idx]}</div>
+        <div class="digest-story-hed">${rep.title}</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;background:var(--red);color:#fff;padding:2px 6px;letter-spacing:1px;text-transform:uppercase;">${country}</span>
+          ${catBadge(cat)}
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:var(--muted);padding:2px 0;font-style:italic;">pop. weight ${cWeight}/10 · severity ×${tMult}</span>
+        </div>
+        <div class="digest-story-body">${para}</div>
+        <div class="digest-story-meta">
+          <span>${chips}</span>
+          <span style="margin-left:auto;">${outlets.length} outlet${outlets.length !== 1 ? 's' : ''} · ${group.length} headline${group.length !== 1 ? 's' : ''} · latest ${dateStr}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('digest-wrap').innerHTML = `
+    <div class="digest-box">
+      ${stories}
+    </div>`;
+}
+
+function buildSummaryParagraph(group) {
+  const seen = new Set();
+  const headlines = group
+    .filter(i => { const k = i.title.toLowerCase().trim(); if (seen.has(k)) return false; seen.add(k); return true; })
+    .slice(0, 8);
+
+  const rep = headlines[0];
+  const others = headlines.slice(1);
+
+  const bestDesc = group
+    .map(i => i.desc)
+    .filter(d => d && d.length > 60)
+    .sort((a, b) => b.length - a.length)[0] || '';
+
+  let para1 = '';
+  if (bestDesc && bestDesc.length > 80) {
+    para1 = truncateToSentence(bestDesc, 280);
+  } else {
+    para1 = rep.title + (others.length ? '. ' + (others[0].title) + '.' : '.');
+  }
+
+  const outletList = [...new Set(group.map(i => i.source))];
+  let para2 = '';
+  if (outletList.length >= 2) {
+    const coverageNote = outletList.length >= 4
+      ? `The story has drawn coverage across ${outletList.length} outlets in the region`
+      : `The story has been covered by ${joinList(outletList.slice(0, 3))}`;
+
+    const additionalAngles = others.slice(3, 6).map(i => i.title).filter(Boolean);
+    para2 = additionalAngles.length
+      ? `${coverageNote}, with related angles including: ${additionalAngles.map(t => '"' + t + '"').join('; ')}.`
+      : `${coverageNote}.`;
+  }
+
+  return [para1, para2].filter(Boolean).map(p => `<p style="margin-bottom:6px;">${escHtml(p)}</p>`).join('');
+}
+
+function truncateToSentence(text, maxLen) {
+  if (text.length <= maxLen) return text;
+  const cut = text.slice(0, maxLen);
+  const lastPunct = Math.max(cut.lastIndexOf('.'), cut.lastIndexOf('!'), cut.lastIndexOf('?'));
+  return lastPunct > maxLen * 0.6 ? cut.slice(0, lastPunct + 1) : cut.trimEnd() + '…';
+}
+
+function joinList(arr) {
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return arr[0] + ' and ' + arr[1];
+  return arr.slice(0, -1).join(', ') + ', and ' + arr[arr.length - 1];
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────
+//  RAW FEED — country + source filters
+// ─────────────────────────────────────
+const RAW_PAGE_SIZE = 50;
+let rawShowAll = false;
+
+function buildCountryFilter() {
+  const sel = document.getElementById('raw-country-filter');
+  sel.innerHTML = '<option value="all">All countries</option>' +
+    COUNTRIES.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function onCountryChange() {
+  rawShowAll = false;
+  const country = document.getElementById('raw-country-filter').value;
+  const sourceSel = document.getElementById('raw-source-filter');
+
+  const sources = country === 'all'
+    ? [...new Set(allItems.map(i => i.source))].sort()
+    : [...new Set(allItems.filter(i => i.country === country).map(i => i.source))].sort();
+
+  sourceSel.innerHTML = `<option value="all">${country === 'all' ? 'All sources' : 'All in ' + country}</option>` +
+    sources.map(s => `<option value="${s}">${s}</option>`).join('');
+
+  renderRaw();
+}
+
+function renderRaw(showAll) {
+  if (showAll !== undefined) rawShowAll = showAll;
+
+  const country = document.getElementById('raw-country-filter')?.value ?? 'all';
+  const source  = document.getElementById('raw-source-filter')?.value ?? 'all';
+  const catFilt = document.getElementById('raw-cat-filter')?.value ?? 'all';
+
+  // Rebuild source dropdown to reflect current data
+  const availSources = country === 'all'
+    ? [...new Set(allItems.map(i => i.source))].sort()
+    : [...new Set(allItems.filter(i => i.country === country).map(i => i.source))].sort();
+
+  const sourceSel = document.getElementById('raw-source-filter');
+  if (sourceSel) {
+    const cur = sourceSel.value;
+    sourceSel.innerHTML = `<option value="all">${country === 'all' ? 'All sources' : 'All in ' + country}</option>` +
+      availSources.map(s => `<option value="${s}" ${s === cur ? 'selected' : ''}>${s}</option>`).join('');
+  }
+
+  // Filter items
+  let filtered = allItems;
+  if (country !== 'all') filtered = filtered.filter(i => i.country === country);
+  if (source  !== 'all') filtered = filtered.filter(i => i.source === source);
+  if (catFilt !== 'all') filtered = filtered.filter(i => classifyStory([i]) === catFilt);
+
+  const sorted = [...filtered].sort((a, b) => b.date - a.date);
+  document.getElementById('raw-meta').textContent = `${sorted.length} item${sorted.length !== 1 ? 's' : ''}`;
+
+  if (!sorted.length) {
+    document.getElementById('raw-wrap').innerHTML = `
+      <div class="empty">
+        <div class="empty-title">No items</div>
+        <div class="empty-sub">No headlines match the selected filter</div>
+      </div>`;
+    return;
+  }
+
+  const visible = rawShowAll ? sorted : sorted.slice(0, RAW_PAGE_SIZE);
+  const hasMore = sorted.length > RAW_PAGE_SIZE;
+
+  const moreBtn = hasMore && !rawShowAll
+    ? `<div style="padding:12px 14px;border-top:1px solid var(--border);text-align:center;">
+        <button onclick="renderRaw(true)" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;background:transparent;border:1px solid var(--border);color:var(--ink);padding:6px 18px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;" onmouseover="this.style.background='var(--ink)';this.style.color='var(--paper)'" onmouseout="this.style.background='transparent';this.style.color='var(--ink)'">
+          Show all ${sorted.length} items ↓
+        </button>
+      </div>`
+    : (rawShowAll && hasMore
+        ? `<div style="padding:12px 14px;border-top:1px solid var(--border);text-align:center;">
+            <button onclick="renderRaw(false)" style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;background:transparent;border:1px solid var(--border);color:var(--ink);padding:6px 18px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;" onmouseover="this.style.background='var(--ink)';this.style.color='var(--paper)'" onmouseout="this.style.background='transparent';this.style.color='var(--ink)'">
+              Collapse ↑
+            </button>
+          </div>`
+        : '');
+
+  document.getElementById('raw-wrap').innerHTML = `
+    <div class="raw-table">
+      ${visible.map(i => {
+        const cat = classifyStory([i]);
+        const cs = CAT_STYLES[cat] || CAT_STYLES['General'];
+        const badge = `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.48rem;border:1px solid ${cs.border};color:${cs.color};padding:1px 4px;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;display:inline-block;">${cat}</span>`;
+        return `
+        <div class="raw-row">
+          <div class="raw-country">${i.country}</div>
+          <div class="raw-src">${i.source}</div>
+          <div class="raw-hed">${badge}<br><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></div>
+          <div class="raw-time">${ago(i.date)}</div>
+        </div>`;
+      }).join('')}
+      ${moreBtn}
+    </div>`;
+}
+
+function ago(d) {
+  const m = (Date.now() - d) / 60000;
+  if (m < 60) return `${Math.round(m)}m ago`;
+  if (m < 1440) return `${Math.round(m / 60)}h ago`;
+  if (m < 10080) return `${Math.floor(m / 1440)}d ago`;
+  return d.toLocaleDateString('en-GB');
+}
+
+// ─────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────
+function setStatus(type, msg) {
+  document.getElementById('status-dot').className = `dot ${type}`;
+  document.getElementById('status-text').textContent = msg;
+}
+
+function setFeedState(id, state, count) {
+  const row = document.getElementById(`fr-${id}`);
+  const n   = document.getElementById(`fn-${id}`);
+  if (row) row.className = `feed-row ${state}`;
+  if (n && count !== undefined) n.textContent = count;
+}
+</script>
+</body>
+</html>
