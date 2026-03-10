@@ -748,8 +748,10 @@ function ago(d) {
 //  HELPERS
 // ─────────────────────────────────────
 function setStatus(type, msg) {
-  document.getElementById('status-dot').className = `dot ${type}`;
-  document.getElementById('status-text').textContent = msg;
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  if (dot) dot.className = `dot ${type}`;
+  if (txt) txt.textContent = msg;
 }
 
 function setFeedState(id, state, count) {
