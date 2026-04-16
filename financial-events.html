@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Calendar</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #E3120B;
+  --ink: #121212;
+  --paper: #FFFFFF;
+  --cream: #F7F7F7;
+  --muted: #777777;
+  --border: #CCCCCC;
+  --border-dark: #333333;
+  --high: #C0392B;
+  --medium: #D35400;
+  --low: #27AE60;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background:var(--paper); color:var(--ink); font-family:'Lato',Arial,sans-serif; font-size:14px; }
+
+/* ── MASTHEAD ── */
+.masthead { border-top:5px solid var(--red); border-bottom:1px solid var(--border-dark); background:var(--paper); position:sticky; top:0; z-index:200; }
+.masthead-inner { display:flex; align-items:stretch; justify-content:space-between; }
+.masthead-logo { padding:12px 28px 10px; border-right:1px solid var(--border); }
+.logo-word { font-family:'Libre Baskerville',Georgia,serif; font-size:1.5rem; font-weight:700; line-height:1.1; letter-spacing:-0.5px; color:var(--ink); }
+.logo-word em { font-style:normal; color:var(--red); }
+.logo-sub { font-family:'IBM Plex Mono',monospace; font-size:0.52rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-top:3px; }
+.masthead-date { flex:1; padding:10px 24px; border-right:1px solid var(--border); display:flex; flex-direction:column; justify-content:center; gap:4px; }
+.date-main { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; color:var(--ink); font-weight:700; }
+.clocks { display:flex; align-items:center; gap:8px; margin-top:3px; }
+.clock-item { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--muted); }
+.clock-city { text-transform:uppercase; letter-spacing:1px; font-size:0.52rem; color:var(--muted); margin-right:3px; }
+.clock-time { color:var(--ink); font-weight:500; }
+.clock-sep { color:#ccc; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; }
+.masthead-actions { padding:12px 20px; display:flex; align-items:center; gap:16px; }
+
+/* ── LAYOUT ── */
+.layout { display:grid; grid-template-columns:240px 1fr; min-height:calc(100vh - 90px); }
+
+/* ── SIDEBAR ── */
+.sidebar { border-right:1px solid var(--border); padding:18px 14px; position:sticky; top:90px; height:calc(100vh - 90px); overflow-y:auto; background:var(--cream); }
+.sidebar-section { margin-bottom:22px; }
+.sidebar-label { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--red); margin-bottom:10px; padding-bottom:5px; border-bottom:2px solid var(--red); }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.stat-box { background:var(--paper); border:1px solid var(--border); padding:7px; text-align:center; }
+.stat-n { font-family:'IBM Plex Mono',monospace; font-size:1.1rem; font-weight:700; color:var(--red); }
+.stat-label { font-size:0.56rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+.btn { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; background:var(--red); color:white; border:none; padding:8px 14px; cursor:pointer; width:100%; text-align:left; margin-bottom:4px; }
+.btn:hover { background:#b50e08; }
+.btn-hint { font-size:0.55rem; color:var(--muted); font-family:'IBM Plex Mono',monospace; line-height:1.4; padding:4px 2px; }
+.filter-label { font-family:'IBM Plex Mono',monospace; font-size:0.52rem; color:var(--muted); letter-spacing:0.5px; text-transform:uppercase; margin-top:6px; margin-bottom:3px; }
+.filter-row select { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; border:1px solid var(--border); background:var(--paper); padding:5px 7px; color:var(--ink); width:100%; margin-bottom:2px; }
+.source-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+.source-dot { width:7px; height:7px; border-radius:50%; background:var(--border); flex-shrink:0; }
+.source-dot.loading { background:#F39C12; animation:pulse 1s ease-in-out infinite; }
+.source-dot.done    { background:#2ECC71; }
+.source-dot.error   { background:var(--red); }
+.source-label { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; color:var(--muted); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── MAIN ── */
+.main { padding:24px 28px; min-width:0; }
+.section-head { border-bottom:2px solid var(--border-dark); padding-bottom:6px; margin-bottom:16px; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+.section-title { font-family:'Libre Baskerville',Georgia,serif; font-size:0.85rem; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+.section-meta { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+
+/* ── TYPE SUMMARY STRIP ── */
+.type-strip { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.type-chip { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; letter-spacing:0.5px; padding:4px 10px; border:1px solid; cursor:pointer; transition:all 0.1s; }
+.type-chip.active { color:white !important; }
+.tc-gdp         { border-color:#1A5276; color:#1A5276; }
+.tc-gdp.active  { background:#1A5276; }
+.tc-inf         { border-color:#C0392B; color:#C0392B; }
+.tc-inf.active  { background:#C0392B; }
+.tc-unemp       { border-color:#6C3483; color:#6C3483; }
+.tc-unemp.active{ background:#6C3483; }
+.tc-conf        { border-color:#1E8449; color:#1E8449; }
+.tc-conf.active { background:#1E8449; }
+.tc-rates       { border-color:#784212; color:#784212; }
+.tc-rates.active{ background:#784212; }
+.tc-other       { border-color:#555; color:#555; }
+.tc-other.active{ background:#555; }
+
+/* ── CALENDAR TABLE ── */
+.cal-day-header {
+  display:flex; align-items:center; gap:10px;
+  background:var(--ink); color:white;
+  padding:6px 12px; margin-bottom:2px; margin-top:18px;
+}
+.cal-day-header:first-child { margin-top:0; }
+.cal-day-label { font-family:'IBM Plex Mono',monospace; font-size:0.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.cal-day-label.today { color:var(--red); }
+.cal-day-date  { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:#aaa; }
+.cal-day-count { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; color:#888; margin-left:auto; }
+
+table.cal-tbl { width:100%; border-collapse:collapse; margin-bottom:4px; }
+table.cal-tbl th {
+  font-family:'IBM Plex Mono',monospace; font-size:0.5rem; letter-spacing:1.5px;
+  text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border);
+  padding:5px 8px; text-align:left; background:var(--cream);
+}
+table.cal-tbl td { padding:7px 8px; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
+table.cal-tbl tr:hover td { background:#fafafa; }
+
+/* high-impact rows */
+table.cal-tbl tr.high-impact td { background:#fff9f9; }
+table.cal-tbl tr.high-impact:hover td { background:#fff0f0; }
+
+.col-time  { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--muted); white-space:nowrap; width:70px; }
+.col-ctry  { white-space:nowrap; width:110px; }
+.col-flag  { font-size:1.1rem; line-height:1; }
+.col-cname { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; color:var(--muted); text-transform:uppercase; margin-left:5px; vertical-align:middle; }
+.col-event { font-family:'Libre Baskerville',Georgia,serif; font-size:0.8rem; font-weight:700; color:var(--ink); }
+.col-event a { color:inherit; text-decoration:none; }
+.col-event a:hover { color:var(--red); }
+.col-period { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; color:var(--muted); margin-left:5px; }
+.col-num   { font-family:'IBM Plex Mono',monospace; font-size:0.68rem; text-align:right; white-space:nowrap; width:80px; }
+.col-num.actual   { color:var(--ink); font-weight:700; }
+.col-num.positive { color:#27AE60; }
+.col-num.negative { color:var(--red); }
+.col-num.neutral  { color:var(--muted); }
+.col-impact { width:70px; text-align:center; }
+.col-type   { width:90px; }
+
+/* Impact badge */
+.imp-badge {
+  font-family:'IBM Plex Mono',monospace; font-size:0.48rem; letter-spacing:1px;
+  text-transform:uppercase; padding:2px 5px; display:inline-block;
+}
+.imp-high   { background:#C0392B; color:white; }
+.imp-medium { background:#D35400; color:white; }
+.imp-low    { background:#BDC3C7; color:#555; }
+
+/* Type badge */
+.type-badge {
+  font-family:'IBM Plex Mono',monospace; font-size:0.48rem; padding:2px 5px;
+  letter-spacing:0.8px; text-transform:uppercase; border:1px solid;
+  display:inline-block;
+}
+.tb-gdp   { border-color:#1A5276; color:#1A5276; }
+.tb-inf   { border-color:#C0392B; color:#C0392B; }
+.tb-unemp { border-color:#6C3483; color:#6C3483; }
+.tb-conf  { border-color:#1E8449; color:#1E8449; }
+.tb-rates { border-color:#784212; color:#784212; }
+.tb-other { border-color:#888; color:#888; }
+
+/* Source tag */
+.src-tag { font-family:'IBM Plex Mono',monospace; font-size:0.42rem; color:#bbb; text-transform:uppercase; margin-left:4px; }
+
+/* ── EARNINGS ── */
+.earn-time { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; padding:2px 6px; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; display:inline-block; }
+.earn-amc  { background:#1A5276; color:white; }
+.earn-bmo  { background:#1E8449; color:white; }
+.earn-tns  { background:var(--border); color:var(--muted); }
+.earn-ticker { font-family:'IBM Plex Mono',monospace; font-size:0.75rem; font-weight:700; color:var(--ink); text-decoration:none; }
+.earn-ticker:hover { color:var(--red); }
+.earn-company { font-family:'Lato',Arial,sans-serif; font-size:0.8rem; color:var(--ink); max-width:280px; }
+.earn-mktcap { font-family:'IBM Plex Mono',monospace; font-size:0.55rem; color:var(--muted); margin-top:2px; }
+
+/* ── LOADING ── */
+.loading-state { text-align:center; padding:50px 20px; color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:0.7rem; letter-spacing:1px; }
+.loading-bar { width:200px; height:2px; background:var(--border); margin:12px auto; overflow:hidden; }
+.loading-bar::after { content:''; display:block; height:100%; width:40%; background:var(--red); animation:slide 1.2s ease-in-out infinite; }
+@keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(350%)} }
+.empty-msg { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--muted); padding:20px 0; text-align:center; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-logo">
+      <div class="logo-word"><em>FINANCIAL</em> CALENDAR</div>
+      <div class="logo-sub">GDP · Inflation · Unemployment · Consumer Confidence</div>
+    </div>
+    <div class="masthead-date">
+      <div class="date-main" id="main-date"></div>
+      <div class="clocks">
+        <span class="clock-item"><span class="clock-city">London</span> <span class="clock-time" id="clock-lon"></span></span>
+        <span class="clock-sep">·</span>
+        <span class="clock-item"><span class="clock-city">New York</span> <span class="clock-time" id="clock-ny"></span></span>
+        <span class="clock-sep">·</span>
+        <span class="clock-item"><span class="clock-city">Frankfurt</span> <span class="clock-time" id="clock-fra"></span></span>
+        <span class="clock-sep">·</span>
+        <span class="clock-item"><span class="clock-city">Tokyo</span> <span class="clock-time" id="clock-tok"></span></span>
+      </div>
+    </div>
+    <div class="masthead-actions">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:4px;">Other Trackers</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="index.html"        style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">Global</a>
+          <a href="us-news.html"      style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">US News</a>
+          <a href="india-news.html"   style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">South Asia</a>
+          <a href="sea-news.html"     style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">SE Asia</a>
+          <a href="events.html"       style="font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px;" onmouseover="this.style.color='var(--ink)';this.style.borderBottomColor='var(--red)'" onmouseout="this.style.color='var(--muted)';this.style.borderBottomColor='transparent'">Events</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Stats</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-n" id="stat-total">0</div><div class="stat-label">Releases</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-high">0</div><div class="stat-label">High Impact</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-days">0</div><div class="stat-label">Days</div></div>
+        <div class="stat-box"><div class="stat-n" id="stat-ctry">0</div><div class="stat-label">Countries</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Settings</div>
+      <div class="filter-label">Look ahead</div>
+      <select id="horizon-sel" onchange="render();renderEarnings();" style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;border:1px solid var(--border);background:var(--paper);padding:5px 7px;color:var(--ink);width:100%;margin-bottom:8px;">
+        <option value="7">Next 7 days</option>
+        <option value="14" selected>Next 14 days</option>
+        <option value="21">Next 21 days</option>
+        <option value="30">Next 30 days</option>
+      </select>
+      <button class="btn" onclick="fetchAll()">&#8635; Refresh calendar</button>
+      <div class="btn-hint">Fetches live data from Trading Economics, ForexFactory &amp; NASDAQ Earnings</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Filters</div>
+      <div class="filter-label">Indicator</div>
+      <select id="type-filter" onchange="render()">
+        <option value="all">All indicators</option>
+        <option value="gdp">GDP</option>
+        <option value="inflation">Inflation / CPI / PPI</option>
+        <option value="unemployment">Unemployment / Jobs</option>
+        <option value="confidence">Consumer Confidence</option>
+        <option value="rates">Interest Rates</option>
+        <option value="other">Other</option>
+      </select>
+      <div class="filter-label">Impact</div>
+      <select id="impact-filter" onchange="render()">
+        <option value="all">All impact levels</option>
+        <option value="high">High impact only</option>
+        <option value="high-med">High + Medium</option>
+      </select>
+      <div class="filter-label">Region</div>
+      <select id="region-filter" onchange="render()">
+        <option value="all">All countries</option>
+        <option value="g7">G7 economies</option>
+        <option value="us">United States</option>
+        <option value="europe">Europe</option>
+        <option value="asia">Asia-Pacific</option>
+        <option value="em">Emerging markets</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Data sources</div>
+      <div class="source-row"><div class="source-dot loading" id="src-te"></div><span class="source-label">Trading Economics</span></div>
+      <div class="source-row"><div class="source-dot loading" id="src-ff"></div><span class="source-label">ForexFactory (this week)</span></div>
+      <div class="source-row"><div class="source-dot loading" id="src-ff2"></div><span class="source-label">ForexFactory (next week)</span></div>
+      <div class="source-row"><div class="source-dot loading" id="src-nasdaq"></div><span class="source-label">NASDAQ Earnings</span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="section-head">
+      <span class="section-title">Economic releases</span>
+      <span class="section-meta" id="cal-meta">—</span>
+    </div>
+
+    <!-- Quick type filter chips -->
+    <div class="type-strip" id="type-strip">
+      <span class="type-chip tc-gdp"   onclick="setTypeChip('gdp')"        data-type="gdp">GDP</span>
+      <span class="type-chip tc-inf"   onclick="setTypeChip('inflation')"   data-type="inflation">Inflation / CPI</span>
+      <span class="type-chip tc-unemp" onclick="setTypeChip('unemployment')"data-type="unemployment">Unemployment</span>
+      <span class="type-chip tc-conf"  onclick="setTypeChip('confidence')"  data-type="confidence">Consumer Confidence</span>
+      <span class="type-chip tc-rates" onclick="setTypeChip('rates')"       data-type="rates">Interest Rates</span>
+      <span class="type-chip tc-other" onclick="setTypeChip('all')"         data-type="all" style="border-color:#aaa;color:#aaa;">Show all</span>
+    </div>
+
+    <div id="cal-container">
+      <div class="loading-state">
+        <div>Loading economic calendar…</div>
+        <div class="loading-bar"></div>
+        <div style="margin-top:10px;font-size:0.55rem;">Fetching from Trading Economics &amp; ForexFactory</div>
+      </div>
+    </div>
+
+    <!-- EARNINGS SECTION -->
+    <div style="margin-top:40px;">
+      <div class="section-head">
+        <span class="section-title">Earnings Calendar</span>
+        <span class="section-meta" id="earnings-meta">—</span>
+      </div>
+      <div id="earnings-container">
+        <div class="loading-state">
+          <div>Loading earnings calendar…</div>
+          <div class="loading-bar"></div>
+          <div style="margin-top:10px;font-size:0.55rem;">Fetching from NASDAQ</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+const PROXIES = [
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`
+];
+const TIMEOUT = 12000;
+let HORIZON = 14;
+
+// ── DATE UTILS ────────────────────────────────────────────────
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MON_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MON_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function today() { const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function dateKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function parseDate(s){ // parse YYYY-MM-DD or ISO string to local date
+  if (!s) return null;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  return new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+}
+
+// ── COUNTRY UTILS ─────────────────────────────────────────────
+// Country name → ISO2 for flag emoji
+const COUNTRY_ISO = {
+  'united states':'US','united kingdom':'GB','germany':'DE','france':'FR',
+  'japan':'JP','china':'CN','italy':'IT','spain':'ES','canada':'CA',
+  'australia':'AU','new zealand':'NZ','switzerland':'CH','norway':'NO',
+  'sweden':'SE','denmark':'DK','netherlands':'NL','belgium':'BE',
+  'austria':'AT','portugal':'PT','greece':'GR','finland':'FI',
+  'ireland':'IE','poland':'PL','czech republic':'CZ','hungary':'HU',
+  'romania':'RO','turkey':'TR','russia':'RU','ukraine':'UA',
+  'brazil':'BR','mexico':'MX','argentina':'AR','colombia':'CO',
+  'chile':'CL','peru':'PE','india':'IN','indonesia':'ID',
+  'south korea':'KR','korea':'KR','taiwan':'TW','hong kong':'HK',
+  'singapore':'SG','thailand':'TH','malaysia':'MY','philippines':'PH',
+  'vietnam':'VN','pakistan':'PK','egypt':'EG','south africa':'ZA',
+  'nigeria':'NG','kenya':'KE','saudi arabia':'SA','uae':'AE',
+  'israel':'IL','iran':'IR','eurozone':'EU','european union':'EU',
+  'all':'🌐'
+};
+// ForexFactory currency → ISO
+const FF_ISO = {
+  USD:'US',EUR:'EU',GBP:'GB',JPY:'JP',AUD:'AU',NZD:'NZ',
+  CAD:'CA',CHF:'CH',CNY:'CN',HKD:'HK',SGD:'SG',SEK:'SE',
+  NOK:'NO',DKK:'DK',TRY:'TR',ZAR:'ZA',BRL:'BR',MXN:'MX',
+  INR:'IN',KRW:'KR'
+};
+const FF_COUNTRY = {
+  USD:'United States',EUR:'Eurozone',GBP:'United Kingdom',JPY:'Japan',
+  AUD:'Australia',NZD:'New Zealand',CAD:'Canada',CHF:'Switzerland',
+  CNY:'China',HKD:'Hong Kong',SGD:'Singapore',SEK:'Sweden',
+  NOK:'Norway',DKK:'Denmark',TRY:'Turkey',ZAR:'South Africa',
+  BRL:'Brazil',MXN:'Mexico',INR:'India',KRW:'South Korea',All:'Global'
+};
+
+function countryFlag(iso) {
+  if (!iso || iso.length !== 2) return '🌐';
+  if (iso === 'EU') return '🇪🇺';
+  const off = 0x1F1E6 - 65;
+  return String.fromCodePoint(iso.toUpperCase().charCodeAt(0)+off) +
+         String.fromCodePoint(iso.toUpperCase().charCodeAt(1)+off);
+}
+
+function getISO(countryName) {
+  if (!countryName) return '';
+  return COUNTRY_ISO[countryName.toLowerCase().trim()] || '';
+}
+
+// ── REGION CLASSIFICATION ─────────────────────────────────────
+const G7 = new Set(['US','GB','DE','FR','JP','IT','CA','EU']);
+function classifyRegion(iso) {
+  if (!iso) return 'other';
+  if (G7.has(iso)) return 'g7';
+  if (iso === 'US') return 'us';
+  if (['DE','FR','IT','ES','NL','BE','AT','PT','GR','FI','IE','PL','CZ','HU','RO','SE','NO','DK','CH','EU','GB'].includes(iso)) return 'europe';
+  if (['JP','CN','KR','AU','NZ','IN','SG','HK','TW','TH','MY','PH','VN','ID'].includes(iso)) return 'asia';
+  return 'em';
+}
+
+// ── INDICATOR CLASSIFICATION ──────────────────────────────────
+const TYPE_PATTERNS = {
+  gdp:          /\bgdp\b|gross domestic product|gdp growth|gdp rate|gdp annualized|gdp qoq|gdp yoy|gdp mom|economic growth rate/i,
+  inflation:    /\binflation\b|\bcpi\b|consumer price index|core cpi|core inflation|\bpce\b|personal consumption expenditure|producer price|\bppi\b|core pce|deflator/i,
+  unemployment: /unemployment|jobless|nonfarm payroll|non.farm payroll|initial claim|continuing claim|employment change|jobs added|labor market|claimant count|ilo unemployment/i,
+  confidence:   /consumer confidence|consumer sentiment|michigan|cci\b|economic sentiment|business confidence|trust index|zew|ifo\b/i,
+  rates:        /interest rate|rate decision|\bfomc\b|fed funds|monetary policy|bank rate|refinancing rate|repo rate|base rate|policy rate/i,
+};
+
+function classifyType(eventName) {
+  for (const [type, pat] of Object.entries(TYPE_PATTERNS)) {
+    if (pat.test(eventName)) return type;
+  }
+  return 'other';
+}
+
+const TYPE_LABEL = { gdp:'GDP', inflation:'Inflation', unemployment:'Unemployment', confidence:'Confidence', rates:'Rates', other:'Other' };
+const TYPE_CSS   = { gdp:'tb-gdp', inflation:'tb-inf', unemployment:'tb-unemp', confidence:'tb-conf', rates:'tb-rates', other:'tb-other' };
+
+// ── PROXY FETCH ───────────────────────────────────────────────
+async function fetchViaProxy(url, proxyIdx=0) {
+  if (proxyIdx >= PROXIES.length) throw new Error('All proxies failed');
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT);
+  try {
+    const r = await fetch(PROXIES[proxyIdx](url), { signal:ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.text();
+  } catch(e) {
+    clearTimeout(timer);
+    return fetchViaProxy(url, proxyIdx+1);
+  }
+}
+
+// ── PARSE TRADING ECONOMICS HTML ─────────────────────────────
+// Returns array of event objects
+function parseTradingEconomics(html) {
+  const events = [];
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  const rows = doc.querySelectorAll('tr[data-event]');
+  rows.forEach(tr => {
+    try {
+      const countryName = tr.getAttribute('data-country') || '';
+      const eventAttr   = tr.getAttribute('data-event') || '';
+      const category    = tr.getAttribute('data-category') || '';
+      const dataUrl     = tr.getAttribute('data-url') || '';
+
+      // Date: first <td> class often looks like " 2026-04-10" or "calendar-date-header 2026-04-10"
+      const tds = tr.querySelectorAll('td');
+      if (tds.length < 3) return;
+
+      const tdClass = tds[0].className || '';
+      const dateMatch = tdClass.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+      if (!dateMatch) return;
+      const dateStr = dateMatch[1];
+
+      // Time: span inside first td
+      const timeSpan = tds[0].querySelector('span');
+      const time = timeSpan ? timeSpan.textContent.trim() : '';
+
+      // Event display name: <a class="calendar-event">
+      const evLink = tr.querySelector('a.calendar-event');
+      const evName = evLink ? evLink.textContent.trim() : eventAttr;
+
+      // Period: <span class="calendar-reference">
+      const refSpan = tr.querySelector('.calendar-reference');
+      const period  = refSpan ? refSpan.textContent.trim() : '';
+
+      // Values: use attribute selector since ids are duplicated
+      const actualEl   = tr.querySelector('[id="actual"]');
+      const previousEl = tr.querySelector('[id="previous"]');
+      const forecastEl = tr.querySelector('[id="forecast"]') || tr.querySelector('[id="consensus"]');
+
+      const actual   = actualEl   ? actualEl.textContent.trim()   : '';
+      const previous = previousEl ? previousEl.textContent.trim() : '';
+      const forecast = forecastEl ? forecastEl.textContent.trim() : '';
+
+      // Impact: infer from category (TE doesn't mark impact directly in this HTML)
+      // Use event type to determine importance
+      const type   = classifyType(evName + ' ' + category);
+      const iso    = getISO(countryName);
+      const region = classifyRegion(iso);
+
+      events.push({
+        date: dateStr, time, country: countryName, iso,
+        region, event: evName, period, category,
+        actual, previous, forecast, type,
+        impact: type === 'other' ? 'low' : (type === 'gdp' || type === 'rates' || type === 'unemployment' || type === 'inflation') ? 'high' : 'medium',
+        source: 'TE',
+        url: dataUrl ? `https://tradingeconomics.com${dataUrl}` : '#'
+      });
+    } catch(e) { /* skip malformed rows */ }
+  });
+
+  return events;
+}
+
+// ── PARSE FOREXFACTORY JSON ───────────────────────────────────
+function parseForexFactory(json) {
+  const events = [];
+  let data;
+  try { data = JSON.parse(json); } catch(e) { return events; }
+  if (!Array.isArray(data)) return events;
+
+  data.forEach(item => {
+    try {
+      if (!item.date || !item.title) return;
+      // date: "2026-04-10T08:30:00-04:00"
+      const dateStr = item.date.slice(0,10);
+      const timeRaw = item.date.slice(11,16);
+      // Parse time as local display — keep as-is from ISO
+      const currency = item.country || '';
+      const iso    = FF_ISO[currency] || '';
+      const country = FF_COUNTRY[currency] || currency;
+      const impact  = (item.impact||'').toLowerCase();
+      const type    = classifyType(item.title);
+      const region  = classifyRegion(iso);
+
+      events.push({
+        date: dateStr,
+        time: timeRaw,
+        country, iso, region,
+        event: item.title,
+        period: '',
+        actual:   item.actual   || '',
+        previous: item.previous || '',
+        forecast: item.forecast || '',
+        type,
+        impact: impact === 'high' ? 'high' : impact === 'medium' ? 'medium' : 'low',
+        source: 'FF',
+        url: '#'
+      });
+    } catch(e) { /* skip */ }
+  });
+
+  return events;
+}
+
+// ── GLOBAL STATE ──────────────────────────────────────────────
+let allEvents   = [];
+let allEarnings = [];
+
+// ── PARSE NASDAQ EARNINGS ─────────────────────────────────────
+function parseNasdaqEarnings(json, dateStr) {
+  const earnings = [];
+  let data;
+  try { data = JSON.parse(json); } catch(e) { return earnings; }
+
+  const rows = data?.data?.rows;
+  if (!Array.isArray(rows)) return earnings;
+
+  rows.forEach(row => {
+    try {
+      if (!row.symbol || !row.name) return;
+      earnings.push({
+        date:        dateStr,
+        symbol:      row.symbol.trim(),
+        name:        row.name.trim(),
+        time:        (row.startdatetimetype || '').trim(),   // AMC / BMO / TNS
+        epsForecast: row.epsForecast != null ? String(row.epsForecast).trim() : '',
+        epsLastYear: row.lastYearEPS  != null ? String(row.lastYearEPS).trim()  : '',
+        noOfEsts:    parseInt(row.noOfEsts) || 0,
+        marketCap:   row.marketCap || '',
+        source:      'NASDAQ'
+      });
+    } catch(e) { /* skip */ }
+  });
+
+  return earnings;
+}
+
+// ── FETCH EARNINGS (NASDAQ per-day) ──────────────────────────
+async function fetchEarnings() {
+  const horizonVal = parseInt(document.getElementById('horizon-sel').value);
+  const t = today();
+  const maxDays = Math.min(horizonVal, 14); // cap at 14 days to limit API calls
+
+  const dates = [];
+  for (let i = 0; i <= maxDays; i++) dates.push(dateKey(addDays(t, i)));
+
+  const results = [];
+  // Fetch in parallel batches of 4
+  for (let i = 0; i < dates.length; i += 4) {
+    const batch = dates.slice(i, i + 4);
+    const batchRes = await Promise.allSettled(
+      batch.map(async ds => {
+        const url = `https://api.nasdaq.com/api/calendar/earnings?date=${ds}`;
+        const json = await fetchViaProxy(url);
+        return parseNasdaqEarnings(json, ds);
+      })
+    );
+    batchRes.forEach(r => { if (r.status === 'fulfilled') results.push(...r.value); });
+  }
+
+  return results;
+}
+
+// ── RENDER EARNINGS ───────────────────────────────────────────
+function renderEarnings() {
+  const horizonVal = parseInt(document.getElementById('horizon-sel').value);
+  const t = today();
+  const earnContainer = document.getElementById('earnings-container');
+  const earnMeta      = document.getElementById('earnings-meta');
+
+  const filtered = allEarnings.filter(ev => {
+    const d = parseDate(ev.date);
+    if (!d) return false;
+    const daysAway = Math.round((d - t) / 86400000);
+    return daysAway >= 0 && daysAway <= horizonVal;
+  });
+
+  // Sort: date asc, then by analyst coverage desc (larger companies first)
+  filtered.sort((a, b) => {
+    const dd = a.date.localeCompare(b.date);
+    if (dd) return dd;
+    return (b.noOfEsts || 0) - (a.noOfEsts || 0);
+  });
+
+  if (earnMeta) earnMeta.textContent =
+    `${filtered.length} report${filtered.length !== 1 ? 's' : ''}`;
+
+  if (!earnContainer) return;
+
+  if (filtered.length === 0) {
+    earnContainer.innerHTML = allEarnings.length === 0
+      ? `<div class="empty-msg">No earnings data loaded — check NASDAQ source status in sidebar.</div>`
+      : `<div class="empty-msg">No earnings reports in the next ${horizonVal} days.</div>`;
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  filtered.forEach(ev => {
+    if (!groups[ev.date]) groups[ev.date] = [];
+    groups[ev.date].push(ev);
+  });
+
+  let html = '';
+  Object.keys(groups).sort().forEach(dateStr => {
+    const d = parseDate(dateStr);
+    const daysAway = Math.round((d - t) / 86400000);
+    const label = daysAway === 0 ? 'TODAY' : daysAway === 1 ? 'TOMORROW' : DAY_NAMES[d.getDay()].toUpperCase();
+    const dateLabel = `${d.getDate()} ${MON_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    const rows = groups[dateStr];
+
+    html += `<div class="cal-day-header">
+      <span class="cal-day-label${daysAway === 0 ? ' today' : ''}">${label}</span>
+      <span class="cal-day-date">${dateLabel}</span>
+      <span class="cal-day-count">${rows.length} report${rows.length !== 1 ? 's' : ''}</span>
+    </div>`;
+
+    html += `<table class="cal-tbl">
+      <thead><tr>
+        <th>When</th><th>Ticker</th><th>Company</th>
+        <th style="text-align:right">EPS Forecast</th>
+        <th style="text-align:right">Last Year EPS</th>
+        <th style="text-align:right">Estimates</th>
+      </tr></thead><tbody>`;
+
+    rows.forEach(ev => {
+      const TIME_LABEL = { AMC: 'After Close', BMO: 'Before Open', TNS: 'Time TBD' };
+      const timeLabel = TIME_LABEL[ev.time] || ev.time || '—';
+      const timeCls   = ev.time === 'AMC' ? 'earn-amc' : ev.time === 'BMO' ? 'earn-bmo' : 'earn-tns';
+      const epsF  = ev.epsForecast ? '$' + ev.epsForecast : '—';
+      const epsLY = ev.epsLastYear ? '$' + ev.epsLastYear : '—';
+      const mktCap = ev.marketCap ? `<div class="earn-mktcap">${ev.marketCap}</div>` : '';
+
+      html += `<tr>
+        <td class="col-time"><span class="earn-time ${timeCls}">${timeLabel}</span></td>
+        <td><a class="earn-ticker" href="https://finance.yahoo.com/quote/${encodeURIComponent(ev.symbol)}" target="_blank" rel="noopener">${ev.symbol}</a></td>
+        <td class="earn-company">${ev.name}${mktCap}</td>
+        <td class="col-num neutral">${epsF}</td>
+        <td class="col-num neutral">${epsLY}</td>
+        <td class="col-num neutral">${ev.noOfEsts || '—'}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+  });
+
+  earnContainer.innerHTML = html;
+}
+
+// ── MAIN FETCH ────────────────────────────────────────────────
+async function fetchAll() {
+  HORIZON = parseInt(document.getElementById('horizon-sel').value);
+  const t = today();
+
+  allEvents   = [];
+  allEarnings = [];
+  document.getElementById('cal-container').innerHTML =
+    `<div class="loading-state"><div>Loading economic calendar…</div><div class="loading-bar"></div></div>`;
+  document.getElementById('earnings-container').innerHTML =
+    `<div class="loading-state"><div>Loading earnings calendar…</div><div class="loading-bar"></div><div style="margin-top:10px;font-size:0.55rem;">Fetching from NASDAQ</div></div>`;
+  document.getElementById('cal-meta').textContent     = 'Loading…';
+  document.getElementById('earnings-meta').textContent = '—';
+  ['stat-total','stat-high','stat-days','stat-ctry'].forEach(id => document.getElementById(id).textContent = '0');
+
+  const setSrc = (id, state) => {
+    const el = document.getElementById(id);
+    if (el) el.className = `source-dot ${state}`;
+  };
+
+  setSrc('src-te',     'loading');
+  setSrc('src-ff',     'loading');
+  setSrc('src-ff2',    'loading');
+  setSrc('src-nasdaq', 'loading');
+
+  // Use plain TE URL (no date params — they change the page structure)
+  const teUrl  = 'https://tradingeconomics.com/calendar';
+  const ffUrl  = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json?version='  + Date.now();
+  const ffUrl2 = 'https://nfs.faireconomy.media/ff_calendar_nextweek.json?version=' + Date.now();
+
+  const [teResult, ffResult, ff2Result] = await Promise.allSettled([
+    fetchViaProxy(teUrl).then(html => {
+      const evs = parseTradingEconomics(html);
+      setSrc('src-te', evs.length > 0 ? 'done' : 'error');
+      return evs;
+    }).catch(() => { setSrc('src-te','error'); return []; }),
+
+    fetchViaProxy(ffUrl).then(json => {
+      const evs = parseForexFactory(json);
+      setSrc('src-ff', evs.length > 0 ? 'done' : 'error');
+      return evs;
+    }).catch(() => { setSrc('src-ff','error'); return []; }),
+
+    fetchViaProxy(ffUrl2).then(json => {
+      const evs = parseForexFactory(json);
+      setSrc('src-ff2', evs.length > 0 ? 'done' : 'error');
+      return evs;
+    }).catch(() => { setSrc('src-ff2','error'); return []; })
+  ]);
+
+  const teEvs  = teResult.status  === 'fulfilled' ? teResult.value  : [];
+  const ffEvs  = ffResult.status  === 'fulfilled' ? ffResult.value  : [];
+  const ff2Evs = ff2Result.status === 'fulfilled' ? ff2Result.value : [];
+
+  // Merge & deduplicate — collect ALL events; date filtering happens in render()
+  const seen = new Set();
+  const merged = [];
+
+  [...teEvs, ...ffEvs, ...ff2Evs].forEach(ev => {
+    if (!ev.date) return;
+    const key = `${ev.date}|${ev.event.toLowerCase().slice(0,30)}|${ev.iso}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    merged.push(ev);
+  });
+
+  // Debug info shown briefly
+  const debugEl = document.getElementById('cal-meta');
+  if (debugEl) debugEl.textContent = `Fetched: ${teEvs.length} TE · ${ffEvs.length} FF · ${ff2Evs.length} FF2 → ${merged.length} total`;
+
+  // Sort: date asc, then impact (high first), then type importance
+  const impOrder = { high:0, medium:1, low:2 };
+  const typeOrder = { gdp:0, rates:1, inflation:2, unemployment:3, confidence:4, other:5 };
+  merged.sort((a,b) => {
+    const dd = a.date.localeCompare(b.date);
+    if (dd) return dd;
+    const id = (impOrder[a.impact]||2) - (impOrder[b.impact]||2);
+    if (id) return id;
+    return (typeOrder[a.type]||5) - (typeOrder[b.type]||5);
+  });
+
+  allEvents = merged;
+  render();
+
+  // Fetch earnings independently (multiple per-date requests — runs after economic data)
+  fetchEarnings().then(earnings => {
+    allEarnings = earnings;
+    setSrc('src-nasdaq', earnings.length > 0 ? 'done' : 'error');
+    renderEarnings();
+  }).catch(() => {
+    setSrc('src-nasdaq', 'error');
+    renderEarnings();
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function render() {
+  HORIZON = parseInt(document.getElementById('horizon-sel').value);
+  const typeFilt   = document.getElementById('type-filter').value;
+  const impFilt    = document.getElementById('impact-filter').value;
+  const regionFilt = document.getElementById('region-filter').value;
+  const t = today();
+
+  const end = addDays(t, HORIZON);
+
+  // Apply filters — including horizon date window
+  const filtered = allEvents.filter(ev => {
+    const d = parseDate(ev.date);
+    if (!d) return false;
+    const daysAway = Math.round((d - t) / 86400000);
+    if (daysAway < 0 || daysAway > HORIZON) return false;   // outside date window
+    if (typeFilt !== 'all' && ev.type !== typeFilt) return false;
+    if (impFilt === 'high' && ev.impact !== 'high') return false;
+    if (impFilt === 'high-med' && ev.impact === 'low') return false;
+    if (regionFilt === 'g7' && !['US','GB','DE','FR','JP','IT','CA','EU'].includes(ev.iso)) return false;
+    if (regionFilt === 'us' && ev.iso !== 'US') return false;
+    if (regionFilt !== 'all' && regionFilt !== 'g7' && regionFilt !== 'us' && ev.region !== regionFilt) return false;
+    return true;
+  });
+
+  // Update stats
+  const highCount = filtered.filter(e => e.impact === 'high').length;
+  const ctrySet   = new Set(filtered.map(e => e.iso).filter(Boolean));
+  const daySet    = new Set(filtered.map(e => e.date));
+  document.getElementById('stat-total').textContent = filtered.length;
+  document.getElementById('stat-high').textContent  = highCount;
+  document.getElementById('stat-ctry').textContent  = ctrySet.size;
+  document.getElementById('stat-days').textContent  = daySet.size;
+  document.getElementById('cal-meta').textContent   =
+    `${filtered.length} release${filtered.length!==1?'s':''} · ${daySet.size} day${daySet.size!==1?'s':''}`;
+
+  const container = document.getElementById('cal-container');
+
+  if (filtered.length === 0) {
+    const totalRaw = allEvents.length;
+    const msg = totalRaw === 0
+      ? `No data loaded yet — check source status in the sidebar and try refreshing.`
+      : `No releases in the next ${HORIZON} days match your filters. ${totalRaw} events were fetched in total — try widening the horizon or removing filters.`;
+    container.innerHTML = `<div class="empty-msg">${msg}</div>`;
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  filtered.forEach(ev => {
+    if (!groups[ev.date]) groups[ev.date] = [];
+    groups[ev.date].push(ev);
+  });
+
+  let html = '';
+  Object.keys(groups).sort().forEach(dateStr => {
+    const d = parseDate(dateStr);
+    const daysAway = Math.round((d - t) / 86400000);
+    const label = daysAway === 0 ? 'TODAY' : daysAway === 1 ? 'TOMORROW' : DAY_NAMES[d.getDay()].toUpperCase();
+    const dateLabel = `${d.getDate()} ${MON_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    const rows = groups[dateStr];
+
+    html += `<div class="cal-day-header">
+      <span class="cal-day-label${daysAway===0?' today':''}">${label}</span>
+      <span class="cal-day-date">${dateLabel}</span>
+      <span class="cal-day-count">${rows.length} release${rows.length!==1?'s':''}</span>
+    </div>`;
+
+    html += `<table class="cal-tbl">
+      <thead><tr>
+        <th>Time</th><th>Country</th><th>Release</th>
+        <th style="text-align:right">Actual</th>
+        <th style="text-align:right">Forecast</th>
+        <th style="text-align:right">Previous</th>
+        <th>Impact</th><th>Type</th>
+      </tr></thead><tbody>`;
+
+    rows.forEach(ev => {
+      const flag = countryFlag(ev.iso);
+      const cname = ev.country ? (ev.country.charAt(0).toUpperCase() + ev.country.slice(1)) : '';
+      const highRow = ev.impact === 'high' ? ' high-impact' : '';
+
+      // Determine actual colour
+      let actualClass = 'neutral';
+      if (ev.actual && ev.forecast) {
+        const a = parseFloat(ev.actual.replace(/[^0-9.\-]/g,''));
+        const f = parseFloat(ev.forecast.replace(/[^0-9.\-]/g,''));
+        if (!isNaN(a) && !isNaN(f)) {
+          actualClass = a > f ? 'positive' : a < f ? 'negative' : 'neutral';
+        }
+      }
+      if (ev.actual) actualClass = 'actual'; // if we have an actual, make it bold
+
+      const impBadge = `<span class="imp-badge imp-${ev.impact}">${ev.impact}</span>`;
+      const typBadge = `<span class="type-badge ${TYPE_CSS[ev.type]||'tb-other'}">${TYPE_LABEL[ev.type]||ev.type}</span>`;
+      const srcTag   = `<span class="src-tag">${ev.source}</span>`;
+      const periodStr = ev.period ? ` <span class="col-period">${ev.period}</span>` : '';
+
+      html += `<tr class="${highRow}">
+        <td class="col-time">${ev.time || '—'}</td>
+        <td class="col-ctry">
+          <span class="col-flag">${flag}</span>
+          <span class="col-cname">${ev.iso || cname.slice(0,3).toUpperCase()}</span>
+        </td>
+        <td>
+          <span class="col-event">
+            <a href="${ev.url}" target="_blank" rel="noopener">${ev.event}</a>${periodStr}
+          </span>
+          ${srcTag}
+        </td>
+        <td class="col-num ${actualClass}">${ev.actual  || '—'}</td>
+        <td class="col-num neutral">${ev.forecast || '—'}</td>
+        <td class="col-num neutral">${ev.previous || '—'}</td>
+        <td class="col-impact">${impBadge}</td>
+        <td class="col-type">${typBadge}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ── TYPE CHIP QUICK FILTER ────────────────────────────────────
+function setTypeChip(type) {
+  document.getElementById('type-filter').value = type;
+  document.querySelectorAll('.type-chip').forEach(chip => {
+    chip.classList.remove('active');
+    if (chip.dataset.type === type) chip.classList.add('active');
+  });
+  render();
+}
+
+// ── CLOCKS ────────────────────────────────────────────────────
+function updateClocks() {
+  const now = new Date();
+  const fmt = tz => now.toLocaleTimeString('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit'});
+  const el  = id => document.getElementById(id);
+  if(el('clock-lon')) el('clock-lon').textContent = fmt('Europe/London');
+  if(el('clock-ny'))  el('clock-ny').textContent  = fmt('America/New_York');
+  if(el('clock-fra')) el('clock-fra').textContent = fmt('Europe/Berlin');
+  if(el('clock-tok')) el('clock-tok').textContent = fmt('Asia/Tokyo');
+  if(el('main-date')) {
+    const d = now;
+    el('main-date').textContent = `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MON_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+updateClocks();
+setInterval(updateClocks, 30000);
+fetchAll();
+</script>
+</body>
+</html>
