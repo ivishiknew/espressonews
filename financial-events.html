@@ -314,10 +314,11 @@ table.cal-tbl tr.high-impact:hover td { background:#fff0f0; }
 // ── CONFIG ────────────────────────────────────────────────────
 const PROXIES = [
   u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
   u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-  u => `https://corsproxy.io/?${encodeURIComponent(u)}`
+  u => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(u)}`
 ];
-const TIMEOUT = 12000;
+const TIMEOUT = 15000;
 let HORIZON = 14;
 
 // ── DATE UTILS ────────────────────────────────────────────────
@@ -412,20 +413,35 @@ function classifyType(eventName) {
 const TYPE_LABEL = { gdp:'GDP', inflation:'Inflation', unemployment:'Unemployment', confidence:'Confidence', rates:'Rates', other:'Other' };
 const TYPE_CSS   = { gdp:'tb-gdp', inflation:'tb-inf', unemployment:'tb-unemp', confidence:'tb-conf', rates:'tb-rates', other:'tb-other' };
 
-// ── PROXY FETCH ───────────────────────────────────────────────
-async function fetchViaProxy(url, proxyIdx=0) {
-  if (proxyIdx >= PROXIES.length) throw new Error('All proxies failed');
-  const ctrl  = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT);
-  try {
-    const r = await fetch(PROXIES[proxyIdx](url), { signal:ctrl.signal });
-    clearTimeout(timer);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return await r.text();
-  } catch(e) {
-    clearTimeout(timer);
-    return fetchViaProxy(url, proxyIdx+1);
+// ── FETCH WITH FALLBACKS ──────────────────────────────────────
+// Tries direct fetch first (works for CORS-enabled APIs like ForexFactory),
+// then falls through each proxy in order.
+async function fetchViaProxy(url) {
+  const attempts = [
+    () => fetch(url, { signal: abortAfter(TIMEOUT) }),                          // direct
+    ...PROXIES.map(p => () => fetch(p(url), { signal: abortAfter(TIMEOUT) }))  // proxied
+  ];
+
+  let lastErr;
+  for (const attempt of attempts) {
+    try {
+      const r = await attempt();
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const text = await r.text();
+      // Guard against proxy returning an HTML error page instead of data
+      if (text.trim().startsWith('<!')) throw new Error('Got HTML instead of data');
+      return text;
+    } catch(e) {
+      lastErr = e;
+    }
   }
+  throw lastErr || new Error('All fetch methods failed');
+}
+
+function abortAfter(ms) {
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), ms);
+  return ctrl.signal;
 }
 
 // ── PARSE TRADING ECONOMICS HTML ─────────────────────────────
@@ -712,20 +728,23 @@ async function fetchAll() {
     fetchViaProxy(teUrl).then(html => {
       const evs = parseTradingEconomics(html);
       setSrc('src-te', evs.length > 0 ? 'done' : 'error');
+      if (evs.length === 0) console.warn('TE: fetched HTML but parsed 0 rows');
       return evs;
-    }).catch(() => { setSrc('src-te','error'); return []; }),
+    }).catch(e => { setSrc('src-te','error'); console.warn('TE fetch failed:', e.message); return []; }),
 
     fetchViaProxy(ffUrl).then(json => {
       const evs = parseForexFactory(json);
       setSrc('src-ff', evs.length > 0 ? 'done' : 'error');
+      if (evs.length === 0) console.warn('FF this week: fetched but parsed 0 rows');
       return evs;
-    }).catch(() => { setSrc('src-ff','error'); return []; }),
+    }).catch(e => { setSrc('src-ff','error'); console.warn('FF this week failed:', e.message); return []; }),
 
     fetchViaProxy(ffUrl2).then(json => {
       const evs = parseForexFactory(json);
       setSrc('src-ff2', evs.length > 0 ? 'done' : 'error');
+      if (evs.length === 0) console.warn('FF next week: fetched but parsed 0 rows');
       return evs;
-    }).catch(() => { setSrc('src-ff2','error'); return []; })
+    }).catch(e => { setSrc('src-ff2','error'); console.warn('FF next week failed:', e.message); return []; })
   ]);
 
   const teEvs  = teResult.status  === 'fulfilled' ? teResult.value  : [];
@@ -813,9 +832,18 @@ function render() {
 
   if (filtered.length === 0) {
     const totalRaw = allEvents.length;
-    const msg = totalRaw === 0
-      ? `No data loaded yet — check source status in the sidebar and try refreshing.`
-      : `No releases in the next ${HORIZON} days match your filters. ${totalRaw} events were fetched in total — try widening the horizon or removing filters.`;
+    let msg;
+    if (totalRaw === 0) {
+      const dots = ['src-te','src-ff','src-ff2'].map(id => {
+        const el = document.getElementById(id);
+        const state = el ? (el.className.includes('done') ? '✓' : el.className.includes('loading') ? '…' : '✗') : '?';
+        const label = { 'src-te':'Trading Economics', 'src-ff':'ForexFactory (this wk)', 'src-ff2':'ForexFactory (next wk)' }[id];
+        return `${state} ${label}`;
+      }).join(' · ');
+      msg = `No data loaded. Source status: ${dots}<br><br>Check browser console (F12) for details, or click <strong>Refresh calendar</strong>.`;
+    } else {
+      msg = `No releases in the next ${HORIZON} days match your filters. ${totalRaw} events were fetched — try widening the horizon or removing filters.`;
+    }
     container.innerHTML = `<div class="empty-msg">${msg}</div>`;
     return;
   }
